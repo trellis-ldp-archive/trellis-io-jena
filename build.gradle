@@ -31,8 +31,16 @@ ext {
     trellisSpiVersion = '0.1.0-SNAPSHOT'
     commonsRdfVersion = '0.3.0-incubating'
     jenaVersion = '3.1.1'
+
+    /* Testing */
     junitVersion = '4.12'
     mockitoVersion = '1.10.19'
+
+    /* Transitive Dependencies */
+    dexxVersion = '0.6'
+    commonsLangVersion = '3.4'
+    commonsCsvVersion = '1.4'
+    thriftVersion = '0.9.2'
 
     /* OSGi */
     trellisApiVersionRange = '0.1.0-SNAPSHOT'
