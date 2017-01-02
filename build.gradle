@@ -1,0 +1,240 @@
+plugins {
+    id 'com.github.hierynomus.license' version '0.13.1'
+    id 'net.researchgate.release' version '2.4.0'
+    id 'org.sonarqube' version '2.2.1'
+}
+
+apply plugin: 'maven'
+apply plugin: 'osgi'
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+apply plugin: 'checkstyle'
+apply plugin: 'com.github.hierynomus.license'
+apply plugin: 'jacoco'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+group = 'edu.amherst.acdc'
+description = 'Trellis ID Service'
+
+ext {
+    vendor = 'Amherst College'
+    homepage = 'https://www.amherst.edu'
+    docURL = 'https://acdc.amherst.edu/wiki'
+    license = 'Apache 2'
+
+    /* Dependencies */
+    trellisApiVersion = '0.1.0-SNAPSHOT'
+    trellisSpiVersion = '0.1.0-SNAPSHOT'
+    commonsRdfVersion = '0.3.0-incubating'
+    junitVersion = '4.12'
+
+    /* OSGi */
+    trellisApiVersionRange = '0.1.0-SNAPSHOT'
+    trellisSpiVersionRange = '0.1.0-SNAPSHOT'
+    defaultOsgiImports = '*'
+    projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
+}
+
+configurations {
+    buildToolsConfig
+}
+
+dependencies {
+    compile group: 'edu.amherst.acdc', name: 'trellis-api', version: trellisApiVersion
+    compile group: 'edu.amherst.acdc', name: 'trellis-spi', version: trellisSpiVersion
+    compile group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    compile group: 'org.apache.commons', name: 'commons-rdf-simple', version: commonsRdfVersion
+
+    testCompile group: 'junit', name: 'junit', version: junitVersion
+
+    buildToolsConfig 'edu.amherst.acdc:acrepo-build-tools:0.1.0'
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+    mavenLocal()
+    // TODO -- remove this after the first release of the API
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+}
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+}
+
+release {
+    tagTemplate = '$name-$version'
+}
+
+jar {
+    manifest {
+        description project.description
+        docURL project.docURL
+        vendor project.vendor
+        license project.license
+
+        instruction 'Import-Package', 'org.apache.commons.rdf.api,*'
+        instruction 'Export-Package', 'edu.amherst.acdc.trellis.service.id'
+    }
+}
+
+task sourceJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar) {
+    classifier 'javadoc'
+    from javadoc
+}
+
+artifacts {
+    archives javadocJar
+    archives sourceJar
+    archives (file('build/resources/main/features.xml')) {
+        classifier 'features'
+        type 'xml'
+    }
+}
+
+jacoco {
+    toolVersion = "0.7.6.201602180812"
+}
+
+license {
+    include "**/*.java"
+    header rootProject.file('build/license/HEADER.txt')
+    strictCheck true
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+processResources {
+    outputs.upToDateWhen { false }
+    expand project.properties
+}
+
+signing {
+    required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        def sonatypeUsername = project.hasProperty('ossrhUsername') ? ossrhUsername : ""
+        def sonatypePassword = project.hasProperty('ossrhPassword') ? ossrhPassword : ""
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+        repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+            authentication(userName: sonatypeUsername, password: sonatypePassword)
+        }
+
+        snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+            authentication(userName: sonatypeUsername, password: sonatypePassword)
+        }
+
+        pom.project {
+            packaging 'jar'
+            url 'https://acdc.amherst.edu/wiki'
+            inceptionYear '2017'
+            name 'Amherst College Trellis Repository ID service'
+            description 'The ID generator for a trellis repository'
+
+            organization {
+                name project.vendor
+                url project.homepage
+            }
+
+            developers {
+                developer {
+                    id 'acoburn'
+                    name 'Aaron Coburn'
+                    email 'acoburn @ (domain of organization url)'
+                    organization 'Amherst College'
+                    organizationUrl 'https://www.amherst.edu'
+                    roles {
+                        role 'developer'
+                    }
+                    timezone '-5'
+                }
+                developer {
+                    id 'bseeger'
+                    name 'Bethany Seeger'
+                    email 'bseeger @ (domain of organization url)'
+                    organization 'Amherst College'
+                    organizationUrl 'https://www.amherst.edu'
+                    roles {
+                        role 'developer'
+                    }
+                    timezone '-5'
+                }
+            }
+
+            scm {
+                connection 'scm:git:git://github.com/acoburn/trellis-service-id.git'
+                developerConnection 'scm:git:git@github.com/acoburn/trellis-service-id.git'
+                url 'https://github.com/acoburn/trellis-service-id'
+                tag 'HEAD'
+            }
+
+            licenses {
+                license {
+                    name 'Apache License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0'
+                    comments 'Copyright (c) 2016 Amherst College'
+                }
+            }
+        }
+    }
+}
+
+task processBuildTools(type: Copy) {
+    from {
+        configurations.buildToolsConfig.collect {
+            zipTree(it).matching {
+                include 'checkstyle/*.xml'
+                include 'license/*.txt'
+            }
+        }
+    }
+    into 'build'
+}
+
+checkstyle {
+    configFile = rootProject.file('build/checkstyle/checkstyle.xml')
+    configProperties.checkstyleConfigDir = rootProject.file('build/checkstyle/')
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectName", "Amherst College Trellis Repository ID Service"
+        property "sonar.projectKey", "edu.amherst.acdc:trellis-service-id"
+    }
+}
+
+task docs(type: Javadoc) {
+    source sourceSets.main.allJava
+    classpath = files(sourceSets.main.compileClasspath)
+    destinationDir = new File(projectDir, "docs/${version}")
+}
+
+checkstyleMain.dependsOn processBuildTools
+afterReleaseBuild.dependsOn docs
+
