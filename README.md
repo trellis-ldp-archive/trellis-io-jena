@@ -1,5 +1,5 @@
-# trellis-service-id
+# trellis-service-io-jena
 
-[![Build Status](https://travis-ci.org/acoburn/trellis-service-id.png?branch=master)](https://travis-ci.org/acoburn/trellis-service-id)
+[![Build Status](https://travis-ci.org/acoburn/trellis-service-io-jena.png?branch=master)](https://travis-ci.org/acoburn/trellis-service-io-jena)
 
-An id-generation service for a trellis repository.
+A Jena-backed serialization service for a trellis repository.
