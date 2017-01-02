@@ -18,7 +18,7 @@ targetCompatibility = 1.8
 
 
 group = 'edu.amherst.acdc'
-description = 'Trellis ID Service'
+description = 'Trellis Serialization Service, using Apache Jena'
 
 ext {
     vendor = 'Amherst College'
@@ -30,7 +30,9 @@ ext {
     trellisApiVersion = '0.1.0-SNAPSHOT'
     trellisSpiVersion = '0.1.0-SNAPSHOT'
     commonsRdfVersion = '0.3.0-incubating'
+    jenaVersion = '3.1.1'
     junitVersion = '4.12'
+    mockitoVersion = '1.10.19'
 
     /* OSGi */
     trellisApiVersionRange = '0.1.0-SNAPSHOT'
@@ -47,9 +49,10 @@ dependencies {
     compile group: 'edu.amherst.acdc', name: 'trellis-api', version: trellisApiVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-spi', version: trellisSpiVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
-    compile group: 'org.apache.commons', name: 'commons-rdf-simple', version: commonsRdfVersion
+    compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
 
     testCompile group: 'junit', name: 'junit', version: junitVersion
+    testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
 
     buildToolsConfig 'edu.amherst.acdc:acrepo-build-tools:0.1.0'
 }
@@ -82,7 +85,7 @@ jar {
         license project.license
 
         instruction 'Import-Package', 'org.apache.commons.rdf.api,*'
-        instruction 'Export-Package', 'edu.amherst.acdc.trellis.service.id'
+        instruction 'Export-Package', 'edu.amherst.acdc.trellis.service.io.jena'
     }
 }
 
@@ -154,8 +157,8 @@ uploadArchives {
             packaging 'jar'
             url 'https://acdc.amherst.edu/wiki'
             inceptionYear '2017'
-            name 'Amherst College Trellis Repository ID service'
-            description 'The ID generator for a trellis repository'
+            name 'Amherst College Trellis Repository IO and serialization service'
+            description 'The RDF serialization service for a trellis repository'
 
             organization {
                 name project.vendor
@@ -224,7 +227,7 @@ checkstyle {
 
 sonarqube {
     properties {
-        property "sonar.projectName", "Amherst College Trellis Repository ID Service"
+        property "sonar.projectName", "Amherst College Trellis Repository Serialization Service"
         property "sonar.projectKey", "edu.amherst.acdc:trellis-service-id"
     }
 }
