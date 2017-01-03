@@ -26,22 +26,24 @@ import static org.apache.jena.riot.RDFFormat.JSONLD_EXPAND_FLAT;
 import static org.apache.jena.riot.RDFFormat.JSONLD_FLATTEN_FLAT;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
-import static org.apache.jena.riot.RDFDataMgr.write;
 import static java.util.Optional.ofNullable;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import edu.amherst.acdc.trellis.api.Event;
 import edu.amherst.acdc.trellis.api.RuntimeRepositoryException;
 import edu.amherst.acdc.trellis.spi.NamespaceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
+import org.apache.commons.rdf.api.Graph;
+import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
 
@@ -65,13 +67,13 @@ public class JenaSerializationService implements SerializationService {
     }
 
     @Override
-    public void serialize(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax) {
-        serialize(triples, output, syntax, null);
+    public void write(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax) {
+        write(triples, output, syntax, null);
     }
 
     @Override
-    public void serialize(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax,
-            final String profile) {
+    public void write(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax,
+            final IRI profile) {
         final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
                 new RuntimeRepositoryException("Invalid content type: " + syntax.mediaType));
 
@@ -88,25 +90,25 @@ public class JenaSerializationService implements SerializationService {
             model.setNsPrefixes(nsService.getNamespaces());
             triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
             if (RDFXML.equals(lang)) {
-                write(output, model.getGraph(), RDFXML_PLAIN);
+                RDFDataMgr.write(output, model.getGraph(), RDFXML_PLAIN);
             } else if (JSONLD.equals(lang)) {
-                write(output, model.getGraph(), getJsonLdProfile(profile));
+                RDFDataMgr.write(output, model.getGraph(), getJsonLdProfile(profile));
             } else {
-                write(output, model.getGraph(), lang);
+                RDFDataMgr.write(output, model.getGraph(), lang);
             }
         }
     }
 
     @Override
-    public void serialize(final Event event, final OutputStream output, final RDFSyntax syntax) {
+    public void read(final Graph graph, final InputStream input, final RDFSyntax syntax) {
 
     }
 
-    private static RDFFormat getJsonLdProfile(final String profile) {
+    private static RDFFormat getJsonLdProfile(final IRI profile) {
         return ofNullable(profile).map(p -> {
-            if (p.equals(compacted.toIRIString())) {
+            if (p.equals(compacted)) {
                 return JSONLD_COMPACT_FLAT;
-            } else if (p.equals(flattened.toIRIString())) {
+            } else if (p.equals(flattened)) {
                 return JSONLD_FLATTEN_FLAT;
             }
             return JSONLD_EXPAND_FLAT;

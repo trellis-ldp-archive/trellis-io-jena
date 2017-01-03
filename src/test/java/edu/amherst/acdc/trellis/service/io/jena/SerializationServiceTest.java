@@ -16,6 +16,9 @@
 package edu.amherst.acdc.trellis.service.io.jena;
 
 import static java.util.stream.Stream.of;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.flattened;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFXML;
@@ -61,9 +64,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SerializationServiceTest {
 
-    private static final String JSONLD_COMPACTED = "http://www.w3.org/ns/json-ld#compacted";
-    private static final String JSONLD_EXPANDED = "http://www.w3.org/ns/json-ld#expanded";
-    private static final String JSONLD_FLATTENED = "http://www.w3.org/ns/json-ld#flattened";
     private static final JenaRDF rdf = new JenaRDF();
     private SerializationService service;
 
@@ -83,7 +83,7 @@ public class SerializationServiceTest {
     @Test
     public void testJsonLdDefaultSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.serialize(getTriples(), out, JSONLD);
+        service.write(getTriples(), out, JSONLD);
         final String output = out.toString("UTF-8");
         assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
         assertFalse(output.contains("\"@context\":"));
@@ -93,7 +93,7 @@ public class SerializationServiceTest {
     @Test
     public void testJsonLdExpandedSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.serialize(getTriples(), out, JSONLD, JSONLD_EXPANDED);
+        service.write(getTriples(), out, JSONLD, expanded);
         final String output = out.toString("UTF-8");
         assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
         assertFalse(output.contains("\"@context\":"));
@@ -103,7 +103,7 @@ public class SerializationServiceTest {
     @Test
     public void testJsonLdCompactedSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.serialize(getTriples(), out, JSONLD, JSONLD_COMPACTED);
+        service.write(getTriples(), out, JSONLD, compacted);
         final String output = out.toString("UTF-8");
         assertTrue(output.contains("\"title\":\"A title\""));
         assertTrue(output.contains("\"@context\":"));
@@ -113,7 +113,7 @@ public class SerializationServiceTest {
     @Test
     public void testJsonLdFlattenedSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.serialize(getTriples(), out, JSONLD, JSONLD_FLATTENED);
+        service.write(getTriples(), out, JSONLD, flattened);
         final String output = out.toString("UTF-8");
         assertTrue(output.contains("\"title\":\"A title\""));
         assertTrue(output.contains("\"@context\":"));
@@ -123,7 +123,7 @@ public class SerializationServiceTest {
     @Test
     public void testXMLSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.serialize(getTriples(), out, RDFXML);
+        service.write(getTriples(), out, RDFXML);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         final Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.RDFXML);
@@ -133,7 +133,7 @@ public class SerializationServiceTest {
     @Test
     public void testNTriplesSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.serialize(getTriples(), out, NTRIPLES);
+        service.write(getTriples(), out, NTRIPLES);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         final Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.NTRIPLES);
@@ -143,7 +143,7 @@ public class SerializationServiceTest {
     @Test
     public void testTurtleSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.serialize(getTriples(), out, TURTLE);
+        service.write(getTriples(), out, TURTLE);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         final Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.TURTLE);
