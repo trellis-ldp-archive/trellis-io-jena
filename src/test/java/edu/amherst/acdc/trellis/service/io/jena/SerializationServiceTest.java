@@ -15,6 +15,7 @@
  */
 package edu.amherst.acdc.trellis.service.io.jena;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Stream.of;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded;
@@ -44,9 +45,9 @@ import java.util.stream.Stream;
 
 import edu.amherst.acdc.trellis.spi.NamespaceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
+import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
-import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
@@ -88,6 +89,10 @@ public class SerializationServiceTest {
         assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
         assertFalse(output.contains("\"@context\":"));
         assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(graph, new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD);
+        validateGraph(graph);
     }
 
     @Test
@@ -98,6 +103,10 @@ public class SerializationServiceTest {
         assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
         assertFalse(output.contains("\"@context\":"));
         assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(graph, new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD);
+        validateGraph(graph);
     }
 
     @Test
@@ -108,6 +117,10 @@ public class SerializationServiceTest {
         assertTrue(output.contains("\"title\":\"A title\""));
         assertTrue(output.contains("\"@context\":"));
         assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(graph, new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD);
+        validateGraph(graph);
     }
 
     @Test
@@ -118,16 +131,25 @@ public class SerializationServiceTest {
         assertTrue(output.contains("\"title\":\"A title\""));
         assertTrue(output.contains("\"@context\":"));
         assertTrue(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(graph, new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD);
+        validateGraph(graph);
     }
 
     @Test
     public void testXMLSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, RDFXML);
-        final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        final Graph graph = createDefaultGraph();
-        RDFDataMgr.read(graph, in, Lang.RDFXML);
-        validateGraph(graph);
+        final String output = out.toString("UTF-8");
+
+        final org.apache.jena.graph.Graph graph1 = createDefaultGraph();
+        RDFDataMgr.read(graph1, new ByteArrayInputStream(output.getBytes(UTF_8)), Lang.RDFXML);
+        validateGraph(rdf.asGraph(graph1));
+
+        final Graph graph2 = rdf.createGraph();
+        service.read(graph2, new ByteArrayInputStream(output.getBytes(UTF_8)), RDFXML);
+        validateGraph(graph2);
     }
 
     @Test
@@ -135,9 +157,9 @@ public class SerializationServiceTest {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, NTRIPLES);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        final Graph graph = createDefaultGraph();
+        final org.apache.jena.graph.Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.NTRIPLES);
-        validateGraph(graph);
+        validateGraph(rdf.asGraph(graph));
     }
 
     @Test
@@ -145,9 +167,9 @@ public class SerializationServiceTest {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, TURTLE);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        final Graph graph = createDefaultGraph();
+        final org.apache.jena.graph.Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.TURTLE);
-        validateGraph(graph);
+        validateGraph(rdf.asGraph(graph));
     }
 
 
@@ -161,7 +183,7 @@ public class SerializationServiceTest {
     }
 
     private static void validateGraph(final Graph graph) {
-        getTriples().map(rdf::asJenaTriple).forEach(triple -> {
+        getTriples().forEach(triple -> {
             assertTrue(graph.contains(triple));
         });
     }
