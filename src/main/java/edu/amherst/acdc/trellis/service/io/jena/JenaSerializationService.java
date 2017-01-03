@@ -15,6 +15,8 @@
  */
 package edu.amherst.acdc.trellis.service.io.jena;
 
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toSet;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.flattened;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
@@ -26,11 +28,12 @@ import static org.apache.jena.riot.RDFFormat.JSONLD_EXPAND_FLAT;
 import static org.apache.jena.riot.RDFFormat.JSONLD_FLATTEN_FLAT;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
-import static java.util.Optional.ofNullable;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import edu.amherst.acdc.trellis.api.RuntimeRepositoryException;
@@ -101,7 +104,19 @@ public class JenaSerializationService implements SerializationService {
 
     @Override
     public void read(final Graph graph, final InputStream input, final RDFSyntax syntax) {
+        final Model model = createDefaultModel();
+        final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
+                new RuntimeRepositoryException("Unsupported RDF Syntax: " + syntax.mediaType));
 
+        RDFDataMgr.read(model, input, lang);
+        final Set<String> namespaces = nsService.getNamespaces().entrySet().stream().map(Map.Entry::getValue)
+                    .collect(toSet());
+        model.getNsPrefixMap().forEach((prefix, namespace) -> {
+            if (!namespaces.contains(namespace)) {
+                nsService.setNamespace(prefix, namespace);
+            }
+        });
+        rdf.asGraph(model).stream().forEach(graph::add);
     }
 
     private static RDFFormat getJsonLdProfile(final IRI profile) {
