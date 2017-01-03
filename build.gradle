@@ -29,6 +29,7 @@ ext {
     /* Dependencies */
     trellisApiVersion = '0.1.0-SNAPSHOT'
     trellisSpiVersion = '0.1.0-SNAPSHOT'
+    trellisVocabularyVersion = '0.1.0-SNAPSHOT'
     commonsRdfVersion = '0.3.0-incubating'
     jenaVersion = '3.1.1'
 
@@ -45,6 +46,7 @@ ext {
     /* OSGi */
     trellisApiVersionRange = '0.1.0-SNAPSHOT'
     trellisSpiVersionRange = '0.1.0-SNAPSHOT'
+    trellisVocabularyVersionRange = '0.1.0-SNAPSHOT'
     defaultOsgiImports = '*'
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
 }
@@ -56,6 +58,7 @@ configurations {
 dependencies {
     compile group: 'edu.amherst.acdc', name: 'trellis-api', version: trellisApiVersion
     compile group: 'edu.amherst.acdc', name: 'trellis-spi', version: trellisSpiVersion
+    compile group: 'edu.amherst.acdc', name: 'trellis-vocabulary', version: trellisVocabularyVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
 

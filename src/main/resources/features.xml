@@ -3,12 +3,14 @@
 
   <repository>mvn:edu.amherst.acdc/trellis-api/${trellisApiVersion}/xml/features</repository>
   <repository>mvn:edu.amherst.acdc/trellis-spi/${trellisSpiVersion}/xml/features</repository>
+  <repository>mvn:edu.amherst.acdc/trellis-vocabulary/${trellisVocabularyVersion}/xml/features</repository>
 
   <feature name="trellis-service-io-jena" version="${project.version}">
     <details>Installs the Jena-backed serialization service</details>
 
     <feature version="${trellisApiVersionRange}">trellis-api</feature>
     <feature version="${trellisSpiVersionRange}">trellis-spi</feature>
+    <feature version="${trellisVocabularyVersionRange}">trellis-vocabulary</feature>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>

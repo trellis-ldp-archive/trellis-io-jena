@@ -15,6 +15,8 @@
  */
 package edu.amherst.acdc.trellis.service.io.jena;
 
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.flattened;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.JSONLD;
 import static org.apache.jena.riot.Lang.RDFXML;
@@ -49,10 +51,6 @@ import org.apache.jena.riot.system.StreamRDF;
  * @author acoburn
  */
 public class JenaSerializationService implements SerializationService {
-
-    private static final String JSONLD_COMPACTED = "http://www.w3.org/ns/json-ld#compacted";
-
-    private static final String JSONLD_FLATTENED = "http://www.w3.org/ns/json-ld#flattened";
 
     private static final JenaRDF rdf = new JenaRDF();
 
@@ -106,9 +104,9 @@ public class JenaSerializationService implements SerializationService {
 
     private static RDFFormat getJsonLdProfile(final String profile) {
         return ofNullable(profile).map(p -> {
-            if (p.equals(JSONLD_COMPACTED)) {
+            if (p.equals(compacted.toIRIString())) {
                 return JSONLD_COMPACT_FLAT;
-            } else if (p.equals(JSONLD_FLATTENED)) {
+            } else if (p.equals(flattened.toIRIString())) {
                 return JSONLD_FLATTEN_FLAT;
             }
             return JSONLD_EXPAND_FLAT;
