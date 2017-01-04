@@ -8,9 +8,9 @@
   <feature name="trellis-service-io-jena" version="${project.version}">
     <details>Installs the Jena-backed serialization service</details>
 
-    <feature version="${trellisApiVersionRange}">trellis-api</feature>
-    <feature version="${trellisSpiVersionRange}">trellis-spi</feature>
-    <feature version="${trellisVocabularyVersionRange}">trellis-vocabulary</feature>
+    <feature>trellis-api</feature>
+    <feature>trellis-spi</feature>
+    <feature>trellis-vocabulary</feature>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
