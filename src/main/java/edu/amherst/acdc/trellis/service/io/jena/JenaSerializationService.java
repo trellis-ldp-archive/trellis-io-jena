@@ -15,6 +15,7 @@
  */
 package edu.amherst.acdc.trellis.service.io.jena;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
@@ -66,6 +67,7 @@ public class JenaSerializationService implements SerializationService {
      * @param namespaceService a namespace service
      */
     public JenaSerializationService(final NamespaceService namespaceService) {
+        requireNonNull(namespaceService, "The namespaceService may not be null!");
         this.nsService = namespaceService;
     }
 
@@ -77,6 +79,10 @@ public class JenaSerializationService implements SerializationService {
     @Override
     public void write(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax,
             final IRI profile) {
+        requireNonNull(triples, "The triples stream may not be null!");
+        requireNonNull(output, "The output stream may not be null!");
+        requireNonNull(syntax, "The RDF syntax value may not be null!");
+
         final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
                 new RuntimeRepositoryException("Invalid content type: " + syntax.mediaType));
 
@@ -104,6 +110,10 @@ public class JenaSerializationService implements SerializationService {
 
     @Override
     public void read(final Graph graph, final InputStream input, final RDFSyntax syntax) {
+        requireNonNull(graph, "The graph may not be null!");
+        requireNonNull(input, "The input stream may not be null!");
+        requireNonNull(syntax, "The syntax value may not be null!");
+
         final Model model = createDefaultModel();
         final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
                 new RuntimeRepositoryException("Unsupported RDF Syntax: " + syntax.mediaType));
