@@ -29,6 +29,7 @@ import static org.apache.jena.riot.RDFFormat.JSONLD_FLATTEN_FLAT;
 import static org.apache.jena.riot.RDFFormat.RDFXML_PLAIN;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,6 +51,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
+import org.slf4j.Logger;
 
 /**
  * A SerializationService implemented using Jena
@@ -57,6 +59,8 @@ import org.apache.jena.riot.system.StreamRDF;
  * @author acoburn
  */
 public class JenaSerializationService implements SerializationService {
+
+    private static final Logger LOGGER = getLogger(JenaSerializationService.class);
 
     private static final JenaRDF rdf = new JenaRDF();
 
@@ -89,12 +93,14 @@ public class JenaSerializationService implements SerializationService {
         final Optional<RDFFormat> format = ofNullable(defaultSerialization(lang));
 
         if (format.isPresent()) {
+            LOGGER.debug("Writing stream-based RDF: {}", format.get().toString());
             final StreamRDF stream = getWriterStream(output, format.get());
             stream.start();
             nsService.getNamespaces().forEach(stream::prefix);
             triples.map(rdf::asJenaTriple).forEach(stream::triple);
             stream.finish();
         } else {
+            LOGGER.debug("Writing buffered RDF: {}", lang.toString());
             final Model model = createDefaultModel();
             model.setNsPrefixes(nsService.getNamespaces());
             triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
@@ -123,7 +129,8 @@ public class JenaSerializationService implements SerializationService {
                     .collect(toSet());
         model.getNsPrefixMap().forEach((prefix, namespace) -> {
             if (!namespaces.contains(namespace)) {
-                nsService.setNamespace(prefix, namespace);
+                LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
+                nsService.setPrefix(prefix, namespace);
             }
         });
         rdf.asGraph(model).stream().forEach(graph::add);
