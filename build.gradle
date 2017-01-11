@@ -97,6 +97,8 @@ jar {
 
         instruction 'Import-Package', '*'
         instruction 'Export-Package', "edu.amherst.acdc.trellis.service.io.jena;version=${projectOsgiVersion}"
+        instruction 'Require-Capability', 'osgi.extender; filter:="(osgi.extender=osgi.serviceloader.registrar)";resolution:=optional'
+        instruction 'Provide-Capability', 'osgi.serviceloader; osgi.serviceloader=edu.amherst.acdc.trellis.spi.SerializationService'
     }
 }
 
