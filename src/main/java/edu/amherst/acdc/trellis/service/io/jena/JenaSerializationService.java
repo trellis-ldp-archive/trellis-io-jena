@@ -64,15 +64,19 @@ public class JenaSerializationService implements SerializationService {
 
     private static final JenaRDF rdf = new JenaRDF();
 
-    private final NamespaceService nsService;
+    private NamespaceService nsService;
 
-    /**
-     * Create a Jena-backed serialization service
-     * @param namespaceService a namespace service
-     */
-    public JenaSerializationService(final NamespaceService namespaceService) {
+    @Override
+    public synchronized void setNamespaceService(final NamespaceService namespaceService) {
         requireNonNull(namespaceService, "The namespaceService may not be null!");
         this.nsService = namespaceService;
+    }
+
+    @Override
+    public synchronized void unsetNamespaceService(final NamespaceService namespaceService) {
+        if (this.nsService == namespaceService) {
+            this.nsService = null;
+        }
     }
 
     @Override
@@ -96,13 +100,17 @@ public class JenaSerializationService implements SerializationService {
             LOGGER.debug("Writing stream-based RDF: {}", format.get().toString());
             final StreamRDF stream = getWriterStream(output, format.get());
             stream.start();
-            nsService.getNamespaces().forEach(stream::prefix);
+            if (nsService != null) {
+                nsService.getNamespaces().forEach(stream::prefix);
+            }
             triples.map(rdf::asJenaTriple).forEach(stream::triple);
             stream.finish();
         } else {
             LOGGER.debug("Writing buffered RDF: {}", lang.toString());
             final Model model = createDefaultModel();
-            model.setNsPrefixes(nsService.getNamespaces());
+            if (nsService != null) {
+                model.setNsPrefixes(nsService.getNamespaces());
+            }
             triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
             if (RDFXML.equals(lang)) {
                 RDFDataMgr.write(output, model.getGraph(), RDFXML_PLAIN);
@@ -125,14 +133,16 @@ public class JenaSerializationService implements SerializationService {
                 new RuntimeRepositoryException("Unsupported RDF Syntax: " + syntax.mediaType));
 
         RDFDataMgr.read(model, input, lang);
-        final Set<String> namespaces = nsService.getNamespaces().entrySet().stream().map(Map.Entry::getValue)
-                    .collect(toSet());
-        model.getNsPrefixMap().forEach((prefix, namespace) -> {
-            if (!namespaces.contains(namespace)) {
-                LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
-                nsService.setPrefix(prefix, namespace);
-            }
-        });
+        if (nsService != null) {
+            final Set<String> namespaces = nsService.getNamespaces().entrySet().stream().map(Map.Entry::getValue)
+                        .collect(toSet());
+            model.getNsPrefixMap().forEach((prefix, namespace) -> {
+                if (!namespaces.contains(namespace)) {
+                    LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
+                    nsService.setPrefix(prefix, namespace);
+                }
+            });
+        }
         rdf.asGraph(model).stream().forEach(graph::add);
     }
 

@@ -77,7 +77,8 @@ public class SerializationServiceTest {
         namespaces.put("dcterms", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
 
-        service = new JenaSerializationService(mockNamespaceService);
+        service = new JenaSerializationService();
+        service.setNamespaceService(mockNamespaceService);
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
     }
 
