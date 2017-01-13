@@ -15,10 +15,12 @@
  */
 package edu.amherst.acdc.trellis.service.io.jena;
 
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.flattened;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.JSONLD;
@@ -33,6 +35,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -64,16 +67,26 @@ public class JenaSerializationService implements SerializationService {
 
     private static final JenaRDF rdf = new JenaRDF();
 
+    private static final Map<IRI, RDFFormat> JSONLD_FORMATS;
+
+    static {
+        final Map<IRI, RDFFormat> formats = new HashMap<>();
+        formats.put(compacted, JSONLD_COMPACT_FLAT);
+        formats.put(flattened, JSONLD_FLATTEN_FLAT);
+        formats.put(expanded, JSONLD_EXPAND_FLAT);
+        JSONLD_FORMATS = unmodifiableMap(formats);
+    }
+
     private NamespaceService nsService;
 
     @Override
-    public synchronized void setNamespaceService(final NamespaceService namespaceService) {
+    public synchronized void bind(final NamespaceService namespaceService) {
         requireNonNull(namespaceService, "The namespaceService may not be null!");
         this.nsService = namespaceService;
     }
 
     @Override
-    public synchronized void unsetNamespaceService(final NamespaceService namespaceService) {
+    public synchronized void unbind(final NamespaceService namespaceService) {
         if (this.nsService == namespaceService) {
             this.nsService = null;
         }
@@ -100,17 +113,13 @@ public class JenaSerializationService implements SerializationService {
             LOGGER.debug("Writing stream-based RDF: {}", format.get().toString());
             final StreamRDF stream = getWriterStream(output, format.get());
             stream.start();
-            if (nsService != null) {
-                nsService.getNamespaces().forEach(stream::prefix);
-            }
+            ofNullable(nsService).ifPresent(svc -> svc.getNamespaces().forEach(stream::prefix));
             triples.map(rdf::asJenaTriple).forEach(stream::triple);
             stream.finish();
         } else {
             LOGGER.debug("Writing buffered RDF: {}", lang.toString());
             final Model model = createDefaultModel();
-            if (nsService != null) {
-                model.setNsPrefixes(nsService.getNamespaces());
-            }
+            ofNullable(nsService).map(NamespaceService::getNamespaces).ifPresent(model::setNsPrefixes);
             triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
             if (RDFXML.equals(lang)) {
                 RDFDataMgr.write(output, model.getGraph(), RDFXML_PLAIN);
@@ -133,27 +142,19 @@ public class JenaSerializationService implements SerializationService {
                 new RuntimeRepositoryException("Unsupported RDF Syntax: " + syntax.mediaType));
 
         RDFDataMgr.read(model, input, lang);
-        if (nsService != null) {
-            final Set<String> namespaces = nsService.getNamespaces().entrySet().stream().map(Map.Entry::getValue)
-                        .collect(toSet());
+        ofNullable(nsService).map(NamespaceService::getNamespaces).map(Map::entrySet).ifPresent(ns -> {
+            final Set<String> namespaces = ns.stream().map(Map.Entry::getValue).collect(toSet());
             model.getNsPrefixMap().forEach((prefix, namespace) -> {
                 if (!namespaces.contains(namespace)) {
                     LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
                     nsService.setPrefix(prefix, namespace);
                 }
             });
-        }
+        });
         rdf.asGraph(model).stream().forEach(graph::add);
     }
 
     private static RDFFormat getJsonLdProfile(final IRI profile) {
-        return ofNullable(profile).map(p -> {
-            if (p.equals(compacted)) {
-                return JSONLD_COMPACT_FLAT;
-            } else if (p.equals(flattened)) {
-                return JSONLD_FLATTEN_FLAT;
-            }
-            return JSONLD_EXPAND_FLAT;
-        }).orElse(JSONLD_EXPAND_FLAT);
+        return ofNullable(profile).map(JSONLD_FORMATS::get).orElse(JSONLD_EXPAND_FLAT);
     }
 }
