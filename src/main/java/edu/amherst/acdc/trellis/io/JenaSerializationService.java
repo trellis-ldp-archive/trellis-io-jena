@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.service.io.jena;
+package edu.amherst.acdc.trellis.io;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;

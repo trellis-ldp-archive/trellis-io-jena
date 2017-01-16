@@ -21,4 +21,4 @@
  *
  * @author acoburn
  */
-package edu.amherst.acdc.trellis.service.io.jena;
+package edu.amherst.acdc.trellis.io;
