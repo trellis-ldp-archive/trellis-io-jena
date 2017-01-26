@@ -17,10 +17,13 @@ package edu.amherst.acdc.trellis.io;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted_flattened;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded_flattened;
 import static edu.amherst.acdc.trellis.vocabulary.JSONLD.flattened;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.JSONLD;
@@ -74,6 +77,8 @@ public class JenaSerializationService implements SerializationService {
         formats.put(compacted, JSONLD_COMPACT_FLAT);
         formats.put(flattened, JSONLD_FLATTEN_FLAT);
         formats.put(expanded, JSONLD_EXPAND_FLAT);
+        formats.put(compacted_flattened, JSONLD_FLATTEN_FLAT);
+        formats.put(expanded_flattened, JSONLD_FLATTEN_FLAT);
         JSONLD_FORMATS = unmodifiableMap(formats);
     }
 
@@ -93,13 +98,8 @@ public class JenaSerializationService implements SerializationService {
     }
 
     @Override
-    public void write(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax) {
-        write(triples, output, syntax, null);
-    }
-
-    @Override
     public void write(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax,
-            final IRI profile) {
+            final IRI... profiles) {
         requireNonNull(triples, "The triples stream may not be null!");
         requireNonNull(output, "The output stream may not be null!");
         requireNonNull(syntax, "The RDF syntax value may not be null!");
@@ -124,7 +124,7 @@ public class JenaSerializationService implements SerializationService {
             if (RDFXML.equals(lang)) {
                 RDFDataMgr.write(output, model.getGraph(), RDFXML_PLAIN);
             } else if (JSONLD.equals(lang)) {
-                RDFDataMgr.write(output, model.getGraph(), getJsonLdProfile(profile));
+                RDFDataMgr.write(output, model.getGraph(), getJsonLdProfile(profiles));
             } else {
                 RDFDataMgr.write(output, model.getGraph(), lang);
             }
@@ -154,7 +154,28 @@ public class JenaSerializationService implements SerializationService {
         rdf.asGraph(model).stream().forEach(graph::add);
     }
 
-    private static RDFFormat getJsonLdProfile(final IRI profile) {
-        return ofNullable(profile).map(JSONLD_FORMATS::get).orElse(JSONLD_EXPAND_FLAT);
+    private static RDFFormat getJsonLdProfile(final IRI... profiles) {
+        return of(simplifyProfiles(profiles)).map(JSONLD_FORMATS::get).orElse(JSONLD_EXPAND_FLAT);
+    }
+
+    private static IRI simplifyProfiles(final IRI... profiles) {
+        Boolean isExpanded = true;
+        Boolean isFlattened = false;
+
+        for (final IRI uri : profiles) {
+            if (flattened.equals(uri)) {
+                isFlattened = true;
+            } else if (compacted.equals(uri)) {
+                isExpanded = false;
+            } else if (compacted_flattened.equals(uri)) {
+                return uri;
+            } else if (expanded_flattened.equals(uri)) {
+                return uri;
+            }
+        }
+        if (isFlattened) {
+            return isExpanded ? expanded_flattened : compacted_flattened;
+        }
+        return isExpanded ? expanded : compacted;
     }
 }
