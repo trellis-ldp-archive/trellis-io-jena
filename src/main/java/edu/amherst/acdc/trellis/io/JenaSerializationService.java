@@ -155,22 +155,22 @@ public class JenaSerializationService implements SerializationService {
     }
 
     private static RDFFormat getJsonLdProfile(final IRI... profiles) {
-        return of(simplifyProfiles(profiles)).map(JSONLD_FORMATS::get).orElse(JSONLD_EXPAND_FLAT);
+        return of(mergeProfiles(profiles)).map(JSONLD_FORMATS::get).orElse(JSONLD_EXPAND_FLAT);
     }
 
-    private static IRI simplifyProfiles(final IRI... profiles) {
+    private static IRI mergeProfiles(final IRI... profiles) {
         Boolean isExpanded = true;
         Boolean isFlattened = false;
 
         for (final IRI uri : profiles) {
+            if (compacted_flattened.equals(uri) || expanded_flattened.equals(uri)) {
+                return uri;
+            }
+
             if (flattened.equals(uri)) {
                 isFlattened = true;
             } else if (compacted.equals(uri)) {
                 isExpanded = false;
-            } else if (compacted_flattened.equals(uri)) {
-                return uri;
-            } else if (expanded_flattened.equals(uri)) {
-                return uri;
             }
         }
         if (isFlattened) {
