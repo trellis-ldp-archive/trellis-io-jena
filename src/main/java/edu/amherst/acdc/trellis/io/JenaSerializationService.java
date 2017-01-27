@@ -158,6 +158,14 @@ public class JenaSerializationService implements SerializationService {
         return of(mergeProfiles(profiles)).map(JSONLD_FORMATS::get).orElse(JSONLD_EXPAND_FLAT);
     }
 
+    /**
+     * This will combine multiple JSON-LD profiles into a single profile. For example,
+     * jsonld:compacted + jsonld:flattened = jsonld:compacted_flattened
+     * The default (i.e. no arguments) is jsonld:expanded
+     * Multiple, conflicting profiles (e.g. jsonld:compacted + jsonld:expanded) will result
+     * in a "last profile wins" situation. Profile URIs that are not part of the JSON-LD
+     * vocabulary are ignored.
+     */
     private static IRI mergeProfiles(final IRI... profiles) {
         Boolean isExpanded = true;
         Boolean isFlattened = false;
@@ -171,6 +179,8 @@ public class JenaSerializationService implements SerializationService {
                 isFlattened = true;
             } else if (compacted.equals(uri)) {
                 isExpanded = false;
+            } else if (expanded.equals(uri)) {
+                isExpanded = true;
             }
         }
         if (isFlattened) {
