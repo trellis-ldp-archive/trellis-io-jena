@@ -1,6 +1,6 @@
 # trellis-io-jena
 
-[![Build Status](https://travis-ci.org/acoburn/trellis-io-jena.png?branch=master)](https://travis-ci.org/acoburn/trellis-io-jena)
+[![Build Status](https://travis-ci.org/trellis-ldp/trellis-io-jena.png?branch=master)](https://travis-ci.org/trellis-ldp/trellis-io-jena)
 
 A Jena-backed serialization service for resources in a trellis repository.
 

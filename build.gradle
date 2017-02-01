@@ -204,9 +204,9 @@ uploadArchives {
             }
 
             scm {
-                connection 'scm:git:git://github.com/acoburn/trellis-io-jena.git'
-                developerConnection 'scm:git:git@github.com/acoburn/trellis-io-jena.git'
-                url 'https://github.com/acoburn/trellis-io-jena'
+                connection 'scm:git:git://github.com/trellis-ldp/trellis-io-jena.git'
+                developerConnection 'scm:git:git@github.com/trellis-ldp/trellis-io-jena.git'
+                url 'https://github.com/trellis-ldp/trellis-io-jena'
                 tag 'HEAD'
             }
 
