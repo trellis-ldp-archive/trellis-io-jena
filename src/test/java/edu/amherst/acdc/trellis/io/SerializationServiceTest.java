@@ -92,7 +92,7 @@ public class SerializationServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(graph, new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -106,7 +106,7 @@ public class SerializationServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(graph, new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -120,7 +120,7 @@ public class SerializationServiceTest {
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(graph, new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -134,7 +134,7 @@ public class SerializationServiceTest {
         assertTrue(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(graph, new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -145,11 +145,11 @@ public class SerializationServiceTest {
         final String output = out.toString("UTF-8");
 
         final org.apache.jena.graph.Graph graph1 = createDefaultGraph();
-        RDFDataMgr.read(graph1, new ByteArrayInputStream(output.getBytes(UTF_8)), Lang.RDFXML);
+        RDFDataMgr.read(graph1, new ByteArrayInputStream(output.getBytes(UTF_8)), null, Lang.RDFXML);
         validateGraph(rdf.asGraph(graph1));
 
         final Graph graph2 = rdf.createGraph();
-        service.read(graph2, new ByteArrayInputStream(output.getBytes(UTF_8)), RDFXML);
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, RDFXML).forEach(graph2::add);
         validateGraph(graph2);
     }
 

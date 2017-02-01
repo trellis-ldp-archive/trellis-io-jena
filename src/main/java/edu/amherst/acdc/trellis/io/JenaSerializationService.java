@@ -47,7 +47,6 @@ import java.util.stream.Stream;
 import edu.amherst.acdc.trellis.api.RuntimeRepositoryException;
 import edu.amherst.acdc.trellis.spi.NamespaceService;
 import edu.amherst.acdc.trellis.spi.SerializationService;
-import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
@@ -132,8 +131,7 @@ public class JenaSerializationService implements SerializationService {
     }
 
     @Override
-    public void read(final Graph graph, final InputStream input, final RDFSyntax syntax) {
-        requireNonNull(graph, "The graph may not be null!");
+    public Stream<Triple> read(final InputStream input, final String context, final RDFSyntax syntax) {
         requireNonNull(input, "The input stream may not be null!");
         requireNonNull(syntax, "The syntax value may not be null!");
 
@@ -141,7 +139,7 @@ public class JenaSerializationService implements SerializationService {
         final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
                 new RuntimeRepositoryException("Unsupported RDF Syntax: " + syntax.mediaType));
 
-        RDFDataMgr.read(model, input, lang);
+        RDFDataMgr.read(model, input, context, lang);
         ofNullable(nsService).map(NamespaceService::getNamespaces).map(Map::entrySet).ifPresent(ns -> {
             final Set<String> namespaces = ns.stream().map(Map.Entry::getValue).collect(toSet());
             model.getNsPrefixMap().forEach((prefix, namespace) -> {
@@ -151,7 +149,7 @@ public class JenaSerializationService implements SerializationService {
                 }
             });
         });
-        rdf.asGraph(model).stream().forEach(graph::add);
+        return rdf.asGraph(model).stream().map(t -> (Triple) t);
     }
 
     private static RDFFormat getJsonLdProfile(final IRI... profiles) {
