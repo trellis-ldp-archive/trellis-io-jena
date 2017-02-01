@@ -173,6 +173,13 @@ public class SerializationServiceTest {
         validateGraph(rdf.asGraph(graph));
     }
 
+    @Test
+    public void testTurtleReaderWithContext() {
+        final Graph graph = rdf.createGraph();
+        service.read(getClass().getResourceAsStream("/testRdf.ttl"), "info:trellis/resource", TURTLE)
+            .forEach(graph::add);
+        validateGraph(graph);
+    }
 
     private static Stream<Triple> getTriples() {
         final Node subject = createURI("info:trellis/resource");
