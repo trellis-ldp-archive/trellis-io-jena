@@ -69,17 +69,13 @@ public class JenaSerializationService implements SerializationService {
 
     private static final JenaRDF rdf = new JenaRDF();
 
-    private static final Map<IRI, RDFFormat> JSONLD_FORMATS;
-
-    static {
-        final Map<IRI, RDFFormat> formats = new HashMap<>();
-        formats.put(compacted, JSONLD_COMPACT_FLAT);
-        formats.put(flattened, JSONLD_FLATTEN_FLAT);
-        formats.put(expanded, JSONLD_EXPAND_FLAT);
-        formats.put(compacted_flattened, JSONLD_FLATTEN_FLAT);
-        formats.put(expanded_flattened, JSONLD_FLATTEN_FLAT);
-        JSONLD_FORMATS = unmodifiableMap(formats);
-    }
+    private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(new HashMap<IRI, RDFFormat>() { {
+        put(compacted, JSONLD_COMPACT_FLAT);
+        put(flattened, JSONLD_FLATTEN_FLAT);
+        put(expanded, JSONLD_EXPAND_FLAT);
+        put(compacted_flattened, JSONLD_FLATTEN_FLAT);
+        put(expanded_flattened, JSONLD_FLATTEN_FLAT);
+    }});
 
     private NamespaceService nsService;
 
