@@ -44,8 +44,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import edu.amherst.acdc.trellis.api.RuntimeRepositoryException;
 import edu.amherst.acdc.trellis.spi.NamespaceService;
+import edu.amherst.acdc.trellis.spi.RuntimeRepositoryException;
 import edu.amherst.acdc.trellis.spi.SerializationService;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
