@@ -16,6 +16,7 @@
 package edu.amherst.acdc.trellis.io;
 
 import static java.util.Collections.unmodifiableMap;
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
@@ -40,7 +41,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -102,11 +102,11 @@ public class JenaSerializationService implements SerializationService {
         final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
                 new RuntimeRepositoryException("Invalid content type: " + syntax.mediaType));
 
-        final Optional<RDFFormat> format = ofNullable(defaultSerialization(lang));
+        final RDFFormat format = defaultSerialization(lang);
 
-        if (format.isPresent()) {
-            LOGGER.debug("Writing stream-based RDF: {}", format.get().toString());
-            final StreamRDF stream = getWriterStream(output, format.get());
+        if (nonNull(format)) {
+            LOGGER.debug("Writing stream-based RDF: {}", format.toString());
+            final StreamRDF stream = getWriterStream(output, format);
             stream.start();
             ofNullable(nsService).ifPresent(svc -> svc.getNamespaces().forEach(stream::prefix));
             triples.map(rdf::asJenaTriple).forEach(stream::triple);
