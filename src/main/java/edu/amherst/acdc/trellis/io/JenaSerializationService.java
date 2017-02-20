@@ -157,7 +157,7 @@ public class JenaSerializationService implements SerializationService {
      * jsonld:compacted + jsonld:flattened = jsonld:compacted_flattened
      * The default (i.e. no arguments) is jsonld:expanded
      * Multiple, conflicting profiles (e.g. jsonld:compacted + jsonld:expanded) will result
-     * in a "last profile wins" situation. Profile URIs that are not part of the JSON-LD
+     * in a "last profile wins" situation. Profile IRIs that are not part of the JSON-LD
      * vocabulary are ignored.
      */
     private static IRI mergeProfiles(final IRI... profiles) {
