@@ -15,17 +15,17 @@
  */
 package edu.amherst.acdc.trellis.io;
 
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted_flattened;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded_flattened;
+import static edu.amherst.acdc.trellis.vocabulary.JSONLD.flattened;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted_flattened;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded_flattened;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.flattened;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.JSONLD;
 import static org.apache.jena.riot.Lang.RDFXML;
@@ -37,6 +37,10 @@ import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import edu.amherst.acdc.trellis.spi.NamespaceService;
+import edu.amherst.acdc.trellis.spi.RuntimeRepositoryException;
+import edu.amherst.acdc.trellis.spi.SerializationService;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -44,9 +48,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import edu.amherst.acdc.trellis.spi.NamespaceService;
-import edu.amherst.acdc.trellis.spi.RuntimeRepositoryException;
-import edu.amherst.acdc.trellis.spi.SerializationService;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
