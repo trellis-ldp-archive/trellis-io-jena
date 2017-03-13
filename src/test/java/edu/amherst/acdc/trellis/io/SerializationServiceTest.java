@@ -176,13 +176,13 @@ public class SerializationServiceTest {
     @Test
     public void testTurtleReaderWithContext() {
         final Graph graph = rdf.createGraph();
-        service.read(getClass().getResourceAsStream("/testRdf.ttl"), "info:trellisrepo/resource", TURTLE)
+        service.read(getClass().getResourceAsStream("/testRdf.ttl"), "trellis:repository/resource", TURTLE)
             .forEach(graph::add);
         validateGraph(graph);
     }
 
     private static Stream<Triple> getTriples() {
-        final Node subject = createURI("info:trellisrepo/resource");
+        final Node subject = createURI("trellis:repository/resource");
         return of(
                 create(subject, title.asNode(), createLiteral("A title")),
                 create(subject, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
