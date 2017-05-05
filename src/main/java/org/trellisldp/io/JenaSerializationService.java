@@ -1,6 +1,4 @@
 /*
- * Copyright Amherst College
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.io;
+package org.trellisldp.io;
 
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted_flattened;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded_flattened;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.flattened;
+import static org.trellisldp.vocabulary.JSONLD.compacted;
+import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
+import static org.trellisldp.vocabulary.JSONLD.expanded;
+import static org.trellisldp.vocabulary.JSONLD.expanded_flattened;
+import static org.trellisldp.vocabulary.JSONLD.flattened;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -37,9 +35,9 @@ import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import edu.amherst.acdc.trellis.spi.NamespaceService;
-import edu.amherst.acdc.trellis.spi.RuntimeRepositoryException;
-import edu.amherst.acdc.trellis.spi.SerializationService;
+import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.spi.RuntimeRepositoryException;
+import org.trellisldp.spi.SerializationService;
 
 import java.io.InputStream;
 import java.io.OutputStream;

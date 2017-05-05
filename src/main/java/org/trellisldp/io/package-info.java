@@ -1,6 +1,4 @@
 /*
- * Copyright Amherst College
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +14,9 @@
 /**
  * Trellis resource serialization service (Jena)
  *
- * <p>This package implements the {@link edu.amherst.acdc.trellis.spi.SerializationService}
+ * <p>This package implements the {@link org.trellisldp.spi.SerializationService}
  * using a Jena backend.</p>
  *
  * @author acoburn
  */
-package edu.amherst.acdc.trellis.io;
+package org.trellisldp.io;

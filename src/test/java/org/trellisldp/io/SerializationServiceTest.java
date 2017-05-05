@@ -1,6 +1,4 @@
 /*
- * Copyright Amherst College
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.amherst.acdc.trellis.io;
+package org.trellisldp.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Stream.of;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.compacted;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.expanded;
-import static edu.amherst.acdc.trellis.vocabulary.JSONLD.flattened;
+import static org.trellisldp.vocabulary.JSONLD.compacted;
+import static org.trellisldp.vocabulary.JSONLD.expanded;
+import static org.trellisldp.vocabulary.JSONLD.flattened;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFXML;
@@ -43,8 +41,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import edu.amherst.acdc.trellis.spi.NamespaceService;
-import edu.amherst.acdc.trellis.spi.SerializationService;
+import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.spi.SerializationService;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
