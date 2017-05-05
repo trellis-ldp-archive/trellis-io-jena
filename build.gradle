@@ -230,7 +230,7 @@ checkstyle {
 sonarqube {
     properties {
         property "sonar.projectName", "Trellis Repository Serialization Service"
-        property "sonar.projectKey", "org.trellisldp-io-jena"
+        property "sonar.projectKey", "org.trellisldp:trellis-io-jena"
         property "sonar.links.homepage", "https://github.com/trellis-ldp/trellis"
         property "sonar.links.issue", "https://github.com/trellis-ldp/trellis-io-jena/issues"
         property "sonar.links.scm_dev", "scm:git:git@github.com:trellis-ldp/trellis-io-jena.git"
