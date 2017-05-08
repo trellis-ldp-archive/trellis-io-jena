@@ -97,7 +97,7 @@ public class JenaSerializationService implements SerializationService {
         requireNonNull(syntax, "The RDF syntax value may not be null!");
 
         if (RDFA_HTML.equals(syntax)) {
-            htmlSerializer.write(output, triples, null);
+            htmlSerializer.write(output, triples, profiles.length > 0 ? profiles[0] : null);
         } else {
             final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
                     new RuntimeRepositoryException("Invalid content type: " + syntax.mediaType));
