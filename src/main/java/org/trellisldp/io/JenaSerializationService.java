@@ -24,13 +24,12 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.JSONLD;
-import static org.apache.jena.riot.Lang.RDFXML;
 import static org.apache.jena.riot.RDFFormat.JSONLD_COMPACT_FLAT;
 import static org.apache.jena.riot.RDFFormat.JSONLD_EXPAND_FLAT;
 import static org.apache.jena.riot.RDFFormat.JSONLD_FLATTEN_FLAT;
-import static org.apache.jena.riot.RDFFormat.RDFXML_PLAIN;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -79,6 +78,7 @@ public class JenaSerializationService implements SerializationService {
     }});
 
     private NamespaceService nsService;
+    private HtmlSerializer htmlSerializer;
 
     /**
      * Create a serialization service
@@ -86,10 +86,7 @@ public class JenaSerializationService implements SerializationService {
      */
     public JenaSerializationService(final NamespaceService namespaceService) {
         this.nsService = namespaceService;
-    }
-
-    private Optional<NamespaceService> getNamespaceService() {
-        return ofNullable(nsService);
+        this.htmlSerializer = new HtmlSerializer(namespaceService);
     }
 
     @Override
@@ -99,29 +96,31 @@ public class JenaSerializationService implements SerializationService {
         requireNonNull(output, "The output stream may not be null!");
         requireNonNull(syntax, "The RDF syntax value may not be null!");
 
-        final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
-                new RuntimeRepositoryException("Invalid content type: " + syntax.mediaType));
-
-        final RDFFormat format = defaultSerialization(lang);
-
-        if (nonNull(format)) {
-            LOGGER.debug("Writing stream-based RDF: {}", format.toString());
-            final StreamRDF stream = getWriterStream(output, format);
-            stream.start();
-            getNamespaceService().ifPresent(svc -> svc.getNamespaces().forEach(stream::prefix));
-            triples.map(rdf::asJenaTriple).forEach(stream::triple);
-            stream.finish();
+        if (RDFA_HTML.equals(syntax)) {
+            htmlSerializer.write(output, triples, null);
         } else {
-            LOGGER.debug("Writing buffered RDF: {}", lang.toString());
-            final Model model = createDefaultModel();
-            getNamespaceService().map(NamespaceService::getNamespaces).ifPresent(model::setNsPrefixes);
-            triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
-            if (RDFXML.equals(lang)) {
-                RDFDataMgr.write(output, model.getGraph(), RDFXML_PLAIN);
-            } else if (JSONLD.equals(lang)) {
-                RDFDataMgr.write(output, model.getGraph(), getJsonLdProfile(profiles));
+            final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
+                    new RuntimeRepositoryException("Invalid content type: " + syntax.mediaType));
+
+            final RDFFormat format = defaultSerialization(lang);
+
+            if (nonNull(format)) {
+                LOGGER.debug("Writing stream-based RDF: {}", format.toString());
+                final StreamRDF stream = getWriterStream(output, format);
+                stream.start();
+                getNamespaceService().ifPresent(svc -> svc.getNamespaces().forEach(stream::prefix));
+                triples.map(rdf::asJenaTriple).forEach(stream::triple);
+                stream.finish();
             } else {
-                RDFDataMgr.write(output, model.getGraph(), lang);
+                LOGGER.debug("Writing buffered RDF: {}", lang.toString());
+                final Model model = createDefaultModel();
+                getNamespaceService().map(NamespaceService::getNamespaces).ifPresent(model::setNsPrefixes);
+                triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
+                if (JSONLD.equals(lang)) {
+                    RDFDataMgr.write(output, model.getGraph(), getJsonLdProfile(profiles));
+                } else {
+                    RDFDataMgr.write(output, model.getGraph(), lang);
+                }
             }
         }
     }
@@ -182,4 +181,9 @@ public class JenaSerializationService implements SerializationService {
         }
         return isExpanded ? expanded : compacted;
     }
+
+    private Optional<NamespaceService> getNamespaceService() {
+        return ofNullable(nsService);
+    }
+
 }

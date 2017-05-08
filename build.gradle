@@ -27,12 +27,12 @@ ext {
     license = 'Apache 2'
 
     /* Dependencies */
-    trellisApiVersion = '0.1.0-SNAPSHOT'
     trellisSpiVersion = '0.1.0-SNAPSHOT'
     trellisVocabularyVersion = '0.1.0-SNAPSHOT'
     commonsRdfVersion = '0.3.0-incubating'
     slf4jVersion = '1.7.21'
     jenaVersion = '3.1.1'
+    mustacheVersion = '0.9.2'
 
     /* Testing */
     junitVersion = '4.12'
@@ -54,11 +54,11 @@ configurations {
 }
 
 dependencies {
-    compile group: 'org.trellisldp', name: 'trellis-api', version: trellisApiVersion
     compile group: 'org.trellisldp', name: 'trellis-spi', version: trellisSpiVersion
     compile group: 'org.trellisldp', name: 'trellis-vocabulary', version: trellisVocabularyVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    compile group: 'com.github.spullara.mustache.java', name: 'compiler', version: mustacheVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
     testCompile group: 'junit', name: 'junit', version: junitVersion

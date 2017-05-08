@@ -14,13 +14,14 @@
 package org.trellisldp.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Optional.empty;
 import static java.util.stream.Stream.of;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
 import static org.trellisldp.vocabulary.JSONLD.flattened;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
-import static org.apache.commons.rdf.api.RDFSyntax.RDFXML;
+import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.graph.NodeFactory.createURI;
@@ -32,6 +33,7 @@ import static org.apache.jena.vocabulary.DCTypes.Text;
 import static org.apache.jena.vocabulary.RDF.Nodes.type;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -39,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.trellisldp.spi.NamespaceService;
@@ -77,6 +80,12 @@ public class SerializationServiceTest {
 
         service = new JenaSerializationService(mockNamespaceService);
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
+        when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/terms/"))).thenReturn(Optional.of("dc"));
+        when(mockNamespaceService.getPrefix(eq("http://sws.geonames.org/4929022/"))).thenReturn(empty());
+        when(mockNamespaceService.getPrefix(eq("http://www.w3.org/1999/02/22-rdf-syntax-ns#")))
+            .thenReturn(Optional.of("rdf"));
+        when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/dcmitype/")))
+            .thenReturn(Optional.of("dcmitype"));
     }
 
     @Test
@@ -136,21 +145,6 @@ public class SerializationServiceTest {
     }
 
     @Test
-    public void testXMLSerializer() throws UnsupportedEncodingException {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getTriples(), out, RDFXML);
-        final String output = out.toString("UTF-8");
-
-        final org.apache.jena.graph.Graph graph1 = createDefaultGraph();
-        RDFDataMgr.read(graph1, new ByteArrayInputStream(output.getBytes(UTF_8)), null, Lang.RDFXML);
-        validateGraph(rdf.asGraph(graph1));
-
-        final Graph graph2 = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, RDFXML).forEach(graph2::add);
-        validateGraph(graph2);
-    }
-
-    @Test
     public void testNTriplesSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, NTRIPLES);
@@ -176,6 +170,19 @@ public class SerializationServiceTest {
         service.read(getClass().getResourceAsStream("/testRdf.ttl"), "trellis:repository/resource", TURTLE)
             .forEach(graph::add);
         validateGraph(graph);
+    }
+
+    @Test
+    public void testHtmlSerializer() {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, RDFA_HTML);
+        final String html = new String(out.toByteArray(), UTF_8);
+        assertTrue(html.contains("<title>A title</title>"));
+        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
+        assertTrue(html.contains("<h1>A title</h1>"));
     }
 
     private static Stream<Triple> getTriples() {
