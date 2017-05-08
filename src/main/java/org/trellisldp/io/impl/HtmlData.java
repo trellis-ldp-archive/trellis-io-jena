@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.io;
+package org.trellisldp.io.impl;
 
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
@@ -38,7 +38,7 @@ import org.trellisldp.vocabulary.SKOS;
 /**
  * @author acoburn
  */
-class HtmlData {
+public class HtmlData {
 
     private static final Set<IRI> titleCandidates = new HashSet<>(asList(SKOS.prefLabel, RDFS.label, DC.title));
 

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.io;
+package org.trellisldp.io.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
@@ -21,27 +21,25 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
-
 import org.trellisldp.spi.NamespaceService;
 
 /**
  * @author acoburn
  */
-class HtmlSerializer {
+public class HtmlSerializer {
 
     private static final MustacheFactory mf = new DefaultMustacheFactory();
 
-    private final NamespaceService namespaceService;
     private final Mustache template;
-
+    private final NamespaceService namespaceService;
 
     /**
      * Create a ResourceView object
@@ -49,8 +47,8 @@ class HtmlSerializer {
      * @param template the template name
      */
     public HtmlSerializer(final NamespaceService namespaceService, final String template) {
-        this.template = mf.compile(template);
         this.namespaceService = namespaceService;
+        this.template = mf.compile(template);
     }
 
     /**
@@ -61,6 +59,12 @@ class HtmlSerializer {
         this(namespaceService, "org/trellisldp/io/resource.mustache");
     }
 
+    /**
+     * Send the content to an output stream
+     * @param out the output stream
+     * @param triples the triples
+     * @param subject the subject
+     */
     public void write(final OutputStream out, final Stream<Triple> triples, final IRI subject) {
         final Writer writer = new OutputStreamWriter(out, UTF_8);
         try {
@@ -69,5 +73,4 @@ class HtmlSerializer {
             throw new UncheckedIOException(ex);
         }
     }
-
 }

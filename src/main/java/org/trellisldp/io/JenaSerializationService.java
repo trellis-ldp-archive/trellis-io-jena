@@ -53,6 +53,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
 import org.slf4j.Logger;
 
+import org.trellisldp.io.impl.HtmlSerializer;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.RuntimeRepositoryException;
 import org.trellisldp.spi.SerializationService;

@@ -97,8 +97,6 @@ jar {
 
         instruction 'Import-Package', '*'
         instruction 'Export-Package', "org.trellisldp.io;version=${projectOsgiVersion}"
-        instruction 'Require-Capability', 'osgi.extender; filter:="(osgi.extender=osgi.serviceloader.registrar)";resolution:=optional'
-        instruction 'Provide-Capability', 'osgi.serviceloader; osgi.serviceloader=org.trellisldp.spi.SerializationService'
     }
 }
 
