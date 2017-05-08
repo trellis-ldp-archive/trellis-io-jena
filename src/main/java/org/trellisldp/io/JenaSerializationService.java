@@ -13,11 +13,6 @@
  */
 package org.trellisldp.io;
 
-import static org.trellisldp.vocabulary.JSONLD.compacted;
-import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
-import static org.trellisldp.vocabulary.JSONLD.expanded;
-import static org.trellisldp.vocabulary.JSONLD.expanded_flattened;
-import static org.trellisldp.vocabulary.JSONLD.flattened;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -33,10 +28,11 @@ import static org.apache.jena.riot.RDFFormat.JSONLD_FLATTEN_FLAT;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.slf4j.LoggerFactory.getLogger;
-
-import org.trellisldp.spi.NamespaceService;
-import org.trellisldp.spi.RuntimeRepositoryException;
-import org.trellisldp.spi.SerializationService;
+import static org.trellisldp.vocabulary.JSONLD.compacted;
+import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
+import static org.trellisldp.vocabulary.JSONLD.expanded;
+import static org.trellisldp.vocabulary.JSONLD.expanded_flattened;
+import static org.trellisldp.vocabulary.JSONLD.flattened;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,6 +52,10 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
 import org.slf4j.Logger;
+
+import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.spi.RuntimeRepositoryException;
+import org.trellisldp.spi.SerializationService;
 
 /**
  * A SerializationService implemented using Jena
