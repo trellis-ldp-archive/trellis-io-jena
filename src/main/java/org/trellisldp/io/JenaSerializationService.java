@@ -43,7 +43,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -70,6 +69,7 @@ public class JenaSerializationService implements SerializationService {
 
     private static final JenaRDF rdf = new JenaRDF();
 
+    // TODO -- refactor this with JDK9
     private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(new HashMap<IRI, RDFFormat>() { {
         put(compacted, JSONLD_COMPACT_FLAT);
         put(flattened, JSONLD_FLATTEN_FLAT);
@@ -80,22 +80,15 @@ public class JenaSerializationService implements SerializationService {
 
     private NamespaceService nsService;
 
-    @Override
-    public synchronized void bind(final NamespaceService namespaceService) {
-        requireNonNull(namespaceService, "The namespaceService may not be null!");
-        LOGGER.info("Binding NamespaceService to SerializationService");
+    /**
+     * Create a serialization service
+     * @param namespaceService the namespace service
+     */
+    public JenaSerializationService(final NamespaceService namespaceService) {
         this.nsService = namespaceService;
     }
 
-    @Override
-    public synchronized void unbind(final NamespaceService namespaceService) {
-        if (Objects.equals(this.nsService, namespaceService)) {
-            LOGGER.info("Unbinding NamespaceService from SerializationService");
-            this.nsService = null;
-        }
-    }
-
-    private synchronized Optional<NamespaceService> getNamespaceService() {
+    private Optional<NamespaceService> getNamespaceService() {
         return ofNullable(nsService);
     }
 
