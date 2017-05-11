@@ -14,6 +14,7 @@
 package org.trellisldp.io.impl;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -112,8 +113,11 @@ public class HtmlData {
                 qname = "";
             }
         }
-        return ofNullable(namespace).flatMap(namespaceService::getPrefix).map(pre -> pre + ":" + qname)
-            .orElse(iri);
+        if (nonNull(namespaceService)) {
+            return ofNullable(namespace).flatMap(namespaceService::getPrefix).map(pre -> pre + ":" + qname)
+                .orElse(iri);
+        }
+        return iri;
     }
 
     private static final Comparator<LabelledTriple> sortSubjects = (q1, q2) ->
