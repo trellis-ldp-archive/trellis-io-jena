@@ -27,7 +27,8 @@ import static org.apache.jena.riot.RDFFormat.JSONLD_EXPAND_FLAT;
 import static org.apache.jena.riot.RDFFormat.JSONLD_FLATTEN_FLAT;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
-import static org.apache.jena.update.UpdateAction.parseExecute;
+import static org.apache.jena.update.UpdateAction.execute;
+import static org.apache.jena.update.UpdateFactory.create;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
@@ -151,10 +152,10 @@ public class JenaSerializationService implements SerializationService {
     }
 
     @Override
-    public void update(final Graph graph, final String update) {
+    public void update(final Graph graph, final String update, final String context) {
         requireNonNull(graph, "The input graph may not be null");
         requireNonNull(update, "The update command may not be null");
-        parseExecute(update, rdf.asJenaGraph(graph));
+        execute(create(update, context), rdf.asJenaGraph(graph));
     }
 
     private static RDFFormat getJsonLdProfile(final IRI... profiles) {

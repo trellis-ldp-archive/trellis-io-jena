@@ -48,6 +48,7 @@ import java.util.stream.Stream;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.SerializationService;
 import org.apache.commons.rdf.api.Graph;
+import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.graph.Node;
@@ -191,14 +192,18 @@ public class SerializationServiceTest {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size());
-        service.update(graph, "DELETE WHERE { ?s <http://purl.org/dc/terms/title> ?o }");
+        service.update(graph, "DELETE WHERE { ?s <http://purl.org/dc/terms/title> ?o }", "test:info");
         assertEquals(2L, graph.size());
         service.update(graph, "INSERT { " +
-                "<trellis:repository/resource> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}");
+                "<> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}",
+                "trellis:repository/resource");
         assertEquals(3L, graph.size());
         service.update(graph, "DELETE WHERE { ?s ?p ?o };" +
-                "INSERT { <trellis:repository/resource> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}");
+                "INSERT { <> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}",
+                "trellis:repository");
         assertEquals(1L, graph.size());
+        assertEquals("<trellis:repository>", graph.stream().findFirst().map(Triple::getSubject)
+                .map(RDFTerm::ntriplesString).get());
     }
 
     private static Stream<Triple> getTriples() {
