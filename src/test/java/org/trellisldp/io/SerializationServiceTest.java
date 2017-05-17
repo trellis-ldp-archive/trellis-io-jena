@@ -31,6 +31,7 @@ import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.DCTerms.spatial;
 import static org.apache.jena.vocabulary.DCTypes.Text;
 import static org.apache.jena.vocabulary.RDF.Nodes.type;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -183,6 +184,21 @@ public class SerializationServiceTest {
         assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
         assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
         assertTrue(html.contains("<h1>A title</h1>"));
+    }
+
+    @Test
+    public void testUpdate() {
+        final Graph graph = rdf.createGraph();
+        getTriples().forEach(graph::add);
+        assertEquals(3L, graph.size());
+        service.update(graph, "DELETE WHERE { ?s <http://purl.org/dc/terms/title> ?o }");
+        assertEquals(2L, graph.size());
+        service.update(graph, "INSERT { " +
+                "<trellis:repository/resource> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}");
+        assertEquals(3L, graph.size());
+        service.update(graph, "DELETE WHERE { ?s ?p ?o };" +
+                "INSERT { <trellis:repository/resource> <http://purl.org/dc/terms/title> \"Other title\" } WHERE {}");
+        assertEquals(1L, graph.size());
     }
 
     private static Stream<Triple> getTriples() {
