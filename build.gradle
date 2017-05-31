@@ -18,7 +18,7 @@ targetCompatibility = 1.8
 
 
 group = 'org.trellisldp'
-description = 'Trellis Serialization Service, using Apache Jena'
+description = 'Trellis IO Service, using Apache Jena'
 
 ext {
     vendor = 'Trellis LDP'
@@ -227,7 +227,7 @@ checkstyle {
 
 sonarqube {
     properties {
-        property "sonar.projectName", "Trellis Repository Serialization Service"
+        property "sonar.projectName", "Trellis Repository IO Service"
         property "sonar.projectKey", "org.trellisldp:trellis-io-jena"
         property "sonar.links.homepage", "https://github.com/trellis-ldp/trellis"
         property "sonar.links.issue", "https://github.com/trellis-ldp/trellis-io-jena/issues"
