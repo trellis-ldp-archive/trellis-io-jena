@@ -46,7 +46,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.trellisldp.spi.NamespaceService;
-import org.trellisldp.spi.SerializationService;
+import org.trellisldp.spi.IOService;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
@@ -66,10 +66,10 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author acoburn
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SerializationServiceTest {
+public class IOServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
-    private SerializationService service;
+    private IOService service;
 
     @Mock
     private NamespaceService mockNamespaceService;
@@ -80,7 +80,7 @@ public class SerializationServiceTest {
         namespaces.put("dcterms", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
 
-        service = new JenaSerializationService(mockNamespaceService);
+        service = new JenaIOService(mockNamespaceService);
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
         when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/terms/"))).thenReturn(Optional.of("dc"));
         when(mockNamespaceService.getPrefix(eq("http://sws.geonames.org/4929022/"))).thenReturn(empty());

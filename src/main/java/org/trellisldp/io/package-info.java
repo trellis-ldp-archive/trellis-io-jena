@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 /**
- * Trellis resource serialization service (Jena)
+ * Trellis resource input/output service (Jena)
  *
- * <p>This package implements the {@link org.trellisldp.spi.SerializationService}
+ * <p>This package implements the {@link org.trellisldp.spi.IOService}
  * using a Jena backend.</p>
  *
  * @author acoburn

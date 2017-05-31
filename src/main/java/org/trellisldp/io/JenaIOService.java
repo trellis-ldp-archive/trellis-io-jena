@@ -59,16 +59,16 @@ import org.slf4j.Logger;
 import org.trellisldp.io.impl.HtmlSerializer;
 import org.trellisldp.spi.NamespaceService;
 import org.trellisldp.spi.RuntimeRepositoryException;
-import org.trellisldp.spi.SerializationService;
+import org.trellisldp.spi.IOService;
 
 /**
- * A SerializationService implemented using Jena
+ * An IOService implemented using Jena
  *
  * @author acoburn
  */
-public class JenaSerializationService implements SerializationService {
+public class JenaIOService implements IOService {
 
-    private static final Logger LOGGER = getLogger(JenaSerializationService.class);
+    private static final Logger LOGGER = getLogger(JenaIOService.class);
 
     private static final JenaRDF rdf = new JenaRDF();
 
@@ -88,7 +88,7 @@ public class JenaSerializationService implements SerializationService {
      * Create a serialization service
      * @param namespaceService the namespace service
      */
-    public JenaSerializationService(final NamespaceService namespaceService) {
+    public JenaIOService(final NamespaceService namespaceService) {
         this.nsService = namespaceService;
         this.htmlSerializer = new HtmlSerializer(namespaceService);
     }
