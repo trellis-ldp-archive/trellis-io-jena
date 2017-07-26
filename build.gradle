@@ -58,6 +58,7 @@ dependencies {
     compile group: 'org.trellisldp', name: 'trellis-vocabulary', version: trellisVocabularyVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
     compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    compile group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
     compile group: 'com.github.spullara.mustache.java', name: 'compiler', version: mustacheVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
