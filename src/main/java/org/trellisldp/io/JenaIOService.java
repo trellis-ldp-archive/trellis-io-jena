@@ -13,6 +13,7 @@
  */
 package org.trellisldp.io;
 
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
@@ -29,6 +30,7 @@ import static org.trellisldp.io.impl.IOUtils.getJsonLdProfile;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -61,8 +63,21 @@ public class JenaIOService implements IOService {
 
     private static final JenaRDF rdf = new JenaRDF();
 
+    private static final Map<String, String> defaultProperties = unmodifiableMap(new HashMap<String, String>() { {
+        put("icon", "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
+        put("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+    }});
+
     private NamespaceService nsService;
     private HtmlSerializer htmlSerializer;
+
+    /**
+     * Create a serialization service
+     * @param namespaceService the namespace service
+     */
+    public JenaIOService(final NamespaceService namespaceService) {
+        this(namespaceService, defaultProperties);
+    }
 
     /**
      * Create a serialization service
