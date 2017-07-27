@@ -24,11 +24,13 @@ import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
-import static org.apache.jena.graph.NodeFactory.createURI;
+import static org.apache.jena.graph.NodeFactory.createBlankNode;
 import static org.apache.jena.graph.NodeFactory.createLiteral;
+import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
-import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.DCTerms.spatial;
+import static org.apache.jena.vocabulary.DCTerms.subject;
+import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.DCTypes.Text;
 import static org.apache.jena.vocabulary.RDF.Nodes.type;
 import static org.junit.Assert.assertEquals;
@@ -177,9 +179,10 @@ public class IOServiceTest {
     @Test
     public void testHtmlSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getTriples(), out, RDFA_HTML);
+        service.write(getComplexTriples(), out, RDFA_HTML);
         final String html = new String(out.toByteArray(), UTF_8);
         assertTrue(html.contains("<title>A title</title>"));
+        assertTrue(html.contains("_:B"));
         assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
         assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
         assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
@@ -207,12 +210,25 @@ public class IOServiceTest {
     }
 
     private static Stream<Triple> getTriples() {
-        final Node subject = createURI("trellis:repository/resource");
+        final Node sub = createURI("trellis:repository/resource");
         return of(
-                create(subject, title.asNode(), createLiteral("A title")),
-                create(subject, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
-                create(subject, type, Text.asNode()))
+                create(sub, title.asNode(), createLiteral("A title")),
+                create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
+                create(sub, type, Text.asNode()))
             .map(rdf::asTriple);
+    }
+
+    private static Stream<Triple> getComplexTriples() {
+        final Node sub = createURI("trellis:repository/resource");
+        final Node bn = createBlankNode();
+        return of(
+                create(sub, title.asNode(), createLiteral("A title")),
+                create(sub, subject.asNode(), bn),
+                create(bn, title.asNode(), createLiteral("Other title")),
+                create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
+                create(sub, type, Text.asNode()))
+            .map(rdf::asTriple);
+
     }
 
     private static void validateGraph(final Graph graph) {
