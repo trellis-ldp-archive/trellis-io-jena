@@ -14,6 +14,7 @@
 package org.trellisldp.io.impl;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
@@ -46,17 +47,21 @@ public class HtmlData {
     private final List<Triple> triples;
     private final IRI subject;
     private final NamespaceService namespaceService;
+    private final Map<String, String> properties;
 
     /**
      * Create an HTML Data object
      * @param namespaceService the namespace service
      * @param subject the subject
      * @param triples the triples
+     * @param properties additional properties for static resources
      */
-    public HtmlData(final NamespaceService namespaceService, final IRI subject, final List<Triple> triples) {
+    public HtmlData(final NamespaceService namespaceService, final IRI subject, final List<Triple> triples,
+            final Map<String, String> properties) {
         this.namespaceService = namespaceService;
         this.subject = subject;
         this.triples = triples;
+        this.properties = properties;
     }
 
     /**
@@ -66,6 +71,32 @@ public class HtmlData {
     public List<LabelledTriple> getTriples() {
         return triples.stream().map(labelTriple)
             .sorted(sortSubjects.thenComparing(sortPredicates).thenComparing(sortObjects)).collect(toList());
+    }
+
+    /**
+     * Get any CSS document URLs
+     * @return a list of any CSS documents
+     */
+    public List<String> getCss() {
+        return stream(properties.getOrDefault("css", "").split(","))
+            .map(String::trim).filter(x -> x.length() > 0).collect(toList());
+    }
+
+    /**
+     * Get a Icon URL
+     * @return the location of an icon, if one exists
+     */
+    public String getIcon() {
+        return properties.get("icon");
+    }
+
+    /**
+     * Get a list of javascript document URLs
+     * @return a list of JS documents
+     */
+    public List<String> getJs() {
+        return stream(properties.getOrDefault("js", "").split(","))
+            .map(String::trim).filter(x -> x.length() > 0).collect(toList());
     }
 
     /**

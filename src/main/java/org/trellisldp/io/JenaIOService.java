@@ -67,10 +67,12 @@ public class JenaIOService implements IOService {
     /**
      * Create a serialization service
      * @param namespaceService the namespace service
+     * @param properties additional properties for the HTML view
      */
-    public JenaIOService(final NamespaceService namespaceService) {
+    public JenaIOService(final NamespaceService namespaceService, final Map<String, String> properties) {
         this.nsService = namespaceService;
-        this.htmlSerializer = new HtmlSerializer(namespaceService);
+        this.htmlSerializer = new HtmlSerializer(namespaceService,
+                properties.getOrDefault("template", "org/trellisldp/io/resource.mustache"), properties);
     }
 
     @Override

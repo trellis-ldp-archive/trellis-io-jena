@@ -14,6 +14,7 @@
 package org.trellisldp.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyMap;
 import static java.util.Optional.empty;
 import static java.util.stream.Stream.of;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
@@ -80,7 +81,7 @@ public class IOServiceTest {
         namespaces.put("dcterms", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
 
-        service = new JenaIOService(mockNamespaceService);
+        service = new JenaIOService(mockNamespaceService, emptyMap());
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
         when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/terms/"))).thenReturn(Optional.of("dc"));
         when(mockNamespaceService.getPrefix(eq("http://sws.geonames.org/4929022/"))).thenReturn(empty());

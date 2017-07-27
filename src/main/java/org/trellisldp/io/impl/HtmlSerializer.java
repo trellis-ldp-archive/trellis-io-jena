@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
@@ -40,23 +41,19 @@ public class HtmlSerializer {
 
     private final Mustache template;
     private final NamespaceService namespaceService;
+    private final Map<String, String> properties;
 
     /**
      * Create a ResourceView object
      * @param namespaceService a namespace service
      * @param template the template name
+     * @param properties additional HTML-related properties, e.g. URLs for icon, css, js
      */
-    public HtmlSerializer(final NamespaceService namespaceService, final String template) {
+    public HtmlSerializer(final NamespaceService namespaceService, final String template,
+            final Map<String, String> properties) {
         this.namespaceService = namespaceService;
         this.template = mf.compile(template);
-    }
-
-    /**
-     * Create a ResourceView object
-     * @param namespaceService a namespace service
-     */
-    public HtmlSerializer(final NamespaceService namespaceService) {
-        this(namespaceService, "org/trellisldp/io/resource.mustache");
+        this.properties = properties;
     }
 
     /**
@@ -68,7 +65,9 @@ public class HtmlSerializer {
     public void write(final OutputStream out, final Stream<Triple> triples, final IRI subject) {
         final Writer writer = new OutputStreamWriter(out, UTF_8);
         try {
-            template.execute(writer, new HtmlData(namespaceService, subject, triples.collect(toList()))).flush();
+            template
+                .execute(writer, new HtmlData(namespaceService, subject, triples.collect(toList()), properties))
+                .flush();
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
