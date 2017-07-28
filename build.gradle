@@ -40,12 +40,6 @@ ext {
     mockitoVersion = '2.8.47'
     logbackVersion = '1.2.3'
 
-    /* Transitive Dependencies */
-    dexxVersion = '0.6'
-    commonsLangVersion = '3.4'
-    commonsCsvVersion = '1.4'
-    thriftVersion = '0.9.2'
-
     /* OSGi */
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
 }
