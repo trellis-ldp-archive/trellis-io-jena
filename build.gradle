@@ -1,8 +1,8 @@
 plugins {
     id 'com.github.ben-manes.versions' version '0.15.0'
     id 'com.github.hierynomus.license' version '0.13.1'
-    id 'net.researchgate.release' version '2.4.0'
-    id 'org.sonarqube' version '2.2.1'
+    id 'net.researchgate.release' version '2.6.0'
+    id 'org.sonarqube' version '2.5'
 }
 
 apply plugin: 'maven'
@@ -31,14 +31,14 @@ ext {
     trellisSpiVersion = '0.1.0-SNAPSHOT'
     trellisVocabularyVersion = '0.1.0-SNAPSHOT'
     commonsRdfVersion = '0.3.0-incubating'
-    slf4jVersion = '1.7.21'
+    slf4jVersion = '1.7.25'
     jenaVersion = '3.4.0'
-    mustacheVersion = '0.9.2'
+    mustacheVersion = '0.9.5'
 
     /* Testing */
     junitVersion = '4.12'
     mockitoVersion = '2.8.47'
-    logbackVersion = '1.1.7'
+    logbackVersion = '1.2.3'
 
     /* Transitive Dependencies */
     dexxVersion = '0.6'
