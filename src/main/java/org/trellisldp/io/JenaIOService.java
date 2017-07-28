@@ -45,6 +45,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.update.UpdateException;
 import org.slf4j.Logger;
 
 import org.trellisldp.io.impl.HtmlSerializer;
@@ -152,6 +153,10 @@ public class JenaIOService implements IOService {
     public void update(final Graph graph, final String update, final String context) {
         requireNonNull(graph, "The input graph may not be null");
         requireNonNull(update, "The update command may not be null");
-        execute(create(update, context), rdf.asJenaGraph(graph));
+        try {
+            execute(create(update, context), rdf.asJenaGraph(graph));
+        } catch (final UpdateException ex) {
+            throw new RuntimeRepositoryException(ex);
+        }
     }
 }
