@@ -40,6 +40,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.jena.query.QueryParseException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
@@ -155,7 +156,7 @@ public class JenaIOService implements IOService {
         requireNonNull(update, "The update command may not be null");
         try {
             execute(create(update, context), rdf.asJenaGraph(graph));
-        } catch (final UpdateException ex) {
+        } catch (final UpdateException | QueryParseException ex) {
             throw new RuntimeRepositoryException(ex);
         }
     }

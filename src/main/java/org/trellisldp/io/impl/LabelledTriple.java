@@ -93,7 +93,7 @@ public class LabelledTriple {
         if (nonNull(objLabel)) {
             return objLabel;
         }
-        return objLabel;
+        return getObject();
     }
 
     /**
@@ -104,4 +104,3 @@ public class LabelledTriple {
         return triple.getObject() instanceof IRI;
     }
 }
-

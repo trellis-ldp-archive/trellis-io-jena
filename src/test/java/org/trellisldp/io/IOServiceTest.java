@@ -22,6 +22,7 @@ import static org.trellisldp.vocabulary.JSONLD.flattened;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
+import static org.apache.commons.rdf.api.RDFSyntax.RDFXML;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.graph.NodeFactory.createBlankNode;
@@ -47,8 +48,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.trellisldp.spi.NamespaceService;
-import org.trellisldp.spi.IOService;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
@@ -63,6 +62,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.spi.IOService;
+import org.trellisldp.spi.RuntimeRepositoryException;
 
 /**
  * @author acoburn
@@ -159,6 +161,16 @@ public class IOServiceTest {
     }
 
     @Test
+    public void testBufferedSerializer() {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, RDFXML);
+        final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        final org.apache.jena.graph.Graph graph = createDefaultGraph();
+        RDFDataMgr.read(graph, in, Lang.RDFXML);
+        validateGraph(rdf.asGraph(graph));
+    }
+
+    @Test
     public void testTurtleSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, TURTLE);
@@ -188,6 +200,28 @@ public class IOServiceTest {
         assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
         assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
         assertTrue(html.contains("<h1>A title</h1>"));
+    }
+
+    @Test
+    public void testHtmlSerializer2() {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getComplexTriples(), out, RDFA_HTML, rdf.createIRI("http://example.org/"));
+        final String html = new String(out.toByteArray(), UTF_8);
+        assertTrue(html.contains("<title>A title</title>"));
+        assertTrue(html.contains("_:B"));
+        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
+        assertTrue(html.contains("<h1>A title</h1>"));
+    }
+
+    @Test(expected = RuntimeRepositoryException.class)
+    public void testUpdateError() {
+        final Graph graph = rdf.createGraph();
+        getTriples().forEach(graph::add);
+        assertEquals(3L, graph.size());
+        service.update(graph, "blah blah blah blah blah", null);
     }
 
     @Test
