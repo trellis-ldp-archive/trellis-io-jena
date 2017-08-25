@@ -8,7 +8,7 @@ plugins {
 
 apply plugin: 'maven'
 apply plugin: 'osgi'
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: 'checkstyle'
@@ -50,17 +50,18 @@ configurations {
 }
 
 dependencies {
-    compile group: 'org.trellisldp', name: 'trellis-spi', version: trellisSpiVersion
-    compile group: 'org.trellisldp', name: 'trellis-vocabulary', version: trellisVocabularyVersion
-    compile group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
-    compile group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
-    compile group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
-    compile group: 'com.github.spullara.mustache.java', name: 'compiler', version: mustacheVersion
-    compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
+    api group: 'org.trellisldp', name: 'trellis-spi', version: trellisSpiVersion
 
+    implementation group: 'com.github.spullara.mustache.java', name: 'compiler', version: mustacheVersion
+    implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
+    implementation group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    implementation group: 'org.trellisldp', name: 'trellis-vocabulary', version: trellisVocabularyVersion
+
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
     testCompile group: 'junit', name: 'junit', version: junitVersion
     testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
-    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
 
     buildToolsConfig 'org.trellisldp:trellis-build-tools:0.1.1'
 }
