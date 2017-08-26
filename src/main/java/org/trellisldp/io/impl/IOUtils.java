@@ -36,14 +36,18 @@ import org.apache.jena.riot.RDFFormat;
  */
 public final class IOUtils {
 
-    // TODO -- refactor this with JDK9
-    private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(new HashMap<IRI, RDFFormat>() { {
-        put(compacted, JSONLD_COMPACT_FLAT);
-        put(flattened, JSONLD_FLATTEN_FLAT);
-        put(expanded, JSONLD_EXPAND_FLAT);
-        put(compacted_flattened, JSONLD_FLATTEN_FLAT);
-        put(expanded_flattened, JSONLD_FLATTEN_FLAT);
-    }});
+    private static final Map<IRI, RDFFormat> JSONLD_FORMATS;
+
+    static {
+        // TODO -- refactor this with JDK9
+        final Map<IRI, RDFFormat> data = new HashMap<>();
+        data.put(compacted, JSONLD_COMPACT_FLAT);
+        data.put(flattened, JSONLD_FLATTEN_FLAT);
+        data.put(expanded, JSONLD_EXPAND_FLAT);
+        data.put(compacted_flattened, JSONLD_FLATTEN_FLAT);
+        data.put(expanded_flattened, JSONLD_FLATTEN_FLAT);
+        JSONLD_FORMATS = unmodifiableMap(data);
+    }
 
     /**
      * This will combine multiple JSON-LD profiles into a single profile. For example,

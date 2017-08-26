@@ -65,10 +65,15 @@ public class JenaIOService implements IOService {
 
     private static final JenaRDF rdf = new JenaRDF();
 
-    private static final Map<String, String> defaultProperties = unmodifiableMap(new HashMap<String, String>() { {
-        put("icon", "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
-        put("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
-    }});
+    private static final Map<String, String> defaultProperties;
+
+    static {
+        // TODO use JDK9 initializer
+        final Map<String, String> data = new HashMap<>();
+        data.put("icon", "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
+        data.put("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+        defaultProperties = unmodifiableMap(data);
+    }
 
     private NamespaceService nsService;
     private HtmlSerializer htmlSerializer;
@@ -108,14 +113,14 @@ public class JenaIOService implements IOService {
             final RDFFormat format = defaultSerialization(lang);
 
             if (nonNull(format)) {
-                LOGGER.debug("Writing stream-based RDF: {}", format.toString());
+                LOGGER.debug("Writing stream-based RDF: {}", format);
                 final StreamRDF stream = getWriterStream(output, format);
                 stream.start();
                 ofNullable(nsService).ifPresent(svc -> svc.getNamespaces().forEach(stream::prefix));
                 triples.map(rdf::asJenaTriple).forEach(stream::triple);
                 stream.finish();
             } else {
-                LOGGER.debug("Writing buffered RDF: {}", lang.toString());
+                LOGGER.debug("Writing buffered RDF: {}", lang);
                 final Model model = createDefaultModel();
                 ofNullable(nsService).map(NamespaceService::getNamespaces).ifPresent(model::setNsPrefixes);
                 triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
