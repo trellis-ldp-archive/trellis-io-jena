@@ -39,7 +39,7 @@ ext {
 
     /* Testing */
     junitVersion = '4.12'
-    mockitoVersion = '2.8.47'
+    mockitoVersion = '2.9.0'
     logbackVersion = '1.2.3'
 
     /* OSGi */
