@@ -46,6 +46,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.update.UpdateException;
 import org.slf4j.Logger;
@@ -159,7 +160,7 @@ public class JenaIOService implements IOService {
                 });
             });
             return rdf.asGraph(model).stream().map(t -> (Triple) t);
-        } catch (final AtlasException ex) {
+        } catch (final RiotException | AtlasException ex) {
             throw new RuntimeRepositoryException(ex);
         }
     }

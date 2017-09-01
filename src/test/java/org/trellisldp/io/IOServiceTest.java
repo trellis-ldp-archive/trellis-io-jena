@@ -162,6 +162,12 @@ public class IOServiceTest {
         validateGraph(graph);
     }
 
+    @Test(expected = RuntimeRepositoryException.class)
+    public void testMalformedInput() {
+        final ByteArrayInputStream in = new ByteArrayInputStream("<> <ex:test> a Literal\" . ".getBytes(UTF_8));
+        service.read(in, null, TURTLE);
+    }
+
     @Test
     public void testNTriplesSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
