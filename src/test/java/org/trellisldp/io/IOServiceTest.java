@@ -37,11 +37,17 @@ import static org.apache.jena.vocabulary.RDF.Nodes.type;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,6 +83,12 @@ public class IOServiceTest {
 
     @Mock
     private NamespaceService mockNamespaceService;
+
+    @Mock
+    private InputStream mockInputStream;
+
+    @Mock
+    private OutputStream mockOutputStream;
 
     @Before
     public void setUp() {
@@ -222,6 +234,18 @@ public class IOServiceTest {
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size());
         service.update(graph, "blah blah blah blah blah", null);
+    }
+
+    @Test(expected = RuntimeRepositoryException.class)
+    public void testReadError() throws IOException {
+        doThrow(new IOException()).when(mockInputStream).read(any(byte[].class), anyInt(), anyInt());
+        service.read(mockInputStream, "context", TURTLE);
+    }
+
+    @Test(expected = RuntimeRepositoryException.class)
+    public void testWriteError() throws IOException {
+        doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
+        service.write(getTriples(), mockOutputStream, TURTLE);
     }
 
     @Test

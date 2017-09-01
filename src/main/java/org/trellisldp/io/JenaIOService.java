@@ -40,6 +40,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.jena.atlas.AtlasException;
 import org.apache.jena.query.QueryParseException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
@@ -104,32 +105,36 @@ public class JenaIOService implements IOService {
         requireNonNull(output, "The output stream may not be null!");
         requireNonNull(syntax, "The RDF syntax value may not be null!");
 
-        if (RDFA_HTML.equals(syntax)) {
-            htmlSerializer.write(output, triples, profiles.length > 0 ? profiles[0] : null);
-        } else {
-            final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
-                    new RuntimeRepositoryException("Invalid content type: " + syntax.mediaType));
-
-            final RDFFormat format = defaultSerialization(lang);
-
-            if (nonNull(format)) {
-                LOGGER.debug("Writing stream-based RDF: {}", format);
-                final StreamRDF stream = getWriterStream(output, format);
-                stream.start();
-                ofNullable(nsService).ifPresent(svc -> svc.getNamespaces().forEach(stream::prefix));
-                triples.map(rdf::asJenaTriple).forEach(stream::triple);
-                stream.finish();
+        try {
+            if (RDFA_HTML.equals(syntax)) {
+                htmlSerializer.write(output, triples, profiles.length > 0 ? profiles[0] : null);
             } else {
-                LOGGER.debug("Writing buffered RDF: {}", lang);
-                final Model model = createDefaultModel();
-                ofNullable(nsService).map(NamespaceService::getNamespaces).ifPresent(model::setNsPrefixes);
-                triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
-                if (JSONLD.equals(lang)) {
-                    RDFDataMgr.write(output, model.getGraph(), getJsonLdProfile(profiles));
+                final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
+                        new RuntimeRepositoryException("Invalid content type: " + syntax.mediaType));
+
+                final RDFFormat format = defaultSerialization(lang);
+
+                if (nonNull(format)) {
+                    LOGGER.debug("Writing stream-based RDF: {}", format);
+                    final StreamRDF stream = getWriterStream(output, format);
+                    stream.start();
+                    ofNullable(nsService).ifPresent(svc -> svc.getNamespaces().forEach(stream::prefix));
+                    triples.map(rdf::asJenaTriple).forEach(stream::triple);
+                    stream.finish();
                 } else {
-                    RDFDataMgr.write(output, model.getGraph(), lang);
+                    LOGGER.debug("Writing buffered RDF: {}", lang);
+                    final Model model = createDefaultModel();
+                    ofNullable(nsService).map(NamespaceService::getNamespaces).ifPresent(model::setNsPrefixes);
+                    triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
+                    if (JSONLD.equals(lang)) {
+                        RDFDataMgr.write(output, model.getGraph(), getJsonLdProfile(profiles));
+                    } else {
+                        RDFDataMgr.write(output, model.getGraph(), lang);
+                    }
                 }
             }
+        } catch (final AtlasException ex) {
+            throw new RuntimeRepositoryException(ex);
         }
     }
 
@@ -138,21 +143,25 @@ public class JenaIOService implements IOService {
         requireNonNull(input, "The input stream may not be null!");
         requireNonNull(syntax, "The syntax value may not be null!");
 
-        final Model model = createDefaultModel();
-        final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
-                new RuntimeRepositoryException("Unsupported RDF Syntax: " + syntax.mediaType));
+        try {
+            final Model model = createDefaultModel();
+            final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
+                    new RuntimeRepositoryException("Unsupported RDF Syntax: " + syntax.mediaType));
 
-        RDFDataMgr.read(model, input, context, lang);
-        ofNullable(nsService).map(NamespaceService::getNamespaces).map(Map::entrySet).ifPresent(ns -> {
-            final Set<String> namespaces = ns.stream().map(Map.Entry::getValue).collect(toSet());
-            model.getNsPrefixMap().forEach((prefix, namespace) -> {
-                if (!namespaces.contains(namespace)) {
-                    LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
-                    ofNullable(nsService).ifPresent(svc -> svc.setPrefix(prefix, namespace));
-                }
+            RDFDataMgr.read(model, input, context, lang);
+            ofNullable(nsService).map(NamespaceService::getNamespaces).map(Map::entrySet).ifPresent(ns -> {
+                final Set<String> namespaces = ns.stream().map(Map.Entry::getValue).collect(toSet());
+                model.getNsPrefixMap().forEach((prefix, namespace) -> {
+                    if (!namespaces.contains(namespace)) {
+                        LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
+                        ofNullable(nsService).ifPresent(svc -> svc.setPrefix(prefix, namespace));
+                    }
+                });
             });
-        });
-        return rdf.asGraph(model).stream().map(t -> (Triple) t);
+            return rdf.asGraph(model).stream().map(t -> (Triple) t);
+        } catch (final AtlasException ex) {
+            throw new RuntimeRepositoryException(ex);
+        }
     }
 
     @Override
