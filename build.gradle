@@ -39,8 +39,9 @@ ext {
 
     /* Testing */
     junitVersion = '4.12'
-    mockitoVersion = '2.9.0'
+    mockitoVersion = '2.10.0'
     logbackVersion = '1.2.3'
+    jacocoVersion = "0.7.9"
 
     /* OSGi */
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
@@ -127,7 +128,7 @@ artifacts {
 }
 
 jacoco {
-    toolVersion = "0.7.9"
+    toolVersion = jacocoVersion
 }
 
 license {
