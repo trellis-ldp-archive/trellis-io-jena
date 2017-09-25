@@ -100,7 +100,7 @@ public class JenaIOService implements IOService {
     }
 
     @Override
-    public void write(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax,
+    public void write(final Stream<? extends Triple> triples, final OutputStream output, final RDFSyntax syntax,
             final IRI... profiles) {
         requireNonNull(triples, "The triples stream may not be null!");
         requireNonNull(output, "The output stream may not be null!");
@@ -140,7 +140,7 @@ public class JenaIOService implements IOService {
     }
 
     @Override
-    public Stream<Triple> read(final InputStream input, final String context, final RDFSyntax syntax) {
+    public Stream<? extends Triple> read(final InputStream input, final String context, final RDFSyntax syntax) {
         requireNonNull(input, "The input stream may not be null!");
         requireNonNull(syntax, "The syntax value may not be null!");
 
@@ -159,7 +159,7 @@ public class JenaIOService implements IOService {
                     }
                 });
             });
-            return rdf.asGraph(model).stream().map(t -> (Triple) t);
+            return rdf.asGraph(model).stream();
         } catch (final RiotException | AtlasException ex) {
             throw new RuntimeRepositoryException(ex);
         }
