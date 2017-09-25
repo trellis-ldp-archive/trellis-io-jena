@@ -62,7 +62,7 @@ public class HtmlSerializer {
      * @param triples the triples
      * @param subject the subject
      */
-    public void write(final OutputStream out, final Stream<Triple> triples, final IRI subject) {
+    public void write(final OutputStream out, final Stream<? extends Triple> triples, final IRI subject) {
         final Writer writer = new OutputStreamWriter(out, UTF_8);
         try {
             template
