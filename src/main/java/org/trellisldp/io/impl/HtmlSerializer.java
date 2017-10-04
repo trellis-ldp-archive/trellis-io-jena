@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
-import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.api.NamespaceService;
 
 /**
  * @author acoburn

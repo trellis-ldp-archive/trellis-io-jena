@@ -30,7 +30,7 @@ ext {
     license = 'Apache 2'
 
     /* Dependencies */
-    trellisSpiVersion = '0.1.3'
+    trellisApiVersion = '0.2.0'
     trellisVocabularyVersion = '0.1.0'
     commonsRdfVersion = '0.3.0-incubating'
     slf4jVersion = '1.7.25'
@@ -53,7 +53,7 @@ configurations {
 
 dependencies {
     api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
-    api group: 'org.trellisldp', name: 'trellis-spi', version: trellisSpiVersion
+    api group: 'org.trellisldp', name: 'trellis-api', version: trellisApiVersion
 
     implementation group: 'com.github.spullara.mustache.java', name: 'compiler', version: mustacheVersion
     implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion

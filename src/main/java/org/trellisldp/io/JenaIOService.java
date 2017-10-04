@@ -51,10 +51,10 @@ import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.update.UpdateException;
 import org.slf4j.Logger;
 
+import org.trellisldp.api.IOService;
+import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.RuntimeRepositoryException;
 import org.trellisldp.io.impl.HtmlSerializer;
-import org.trellisldp.spi.IOService;
-import org.trellisldp.spi.NamespaceService;
-import org.trellisldp.spi.RuntimeRepositoryException;
 
 /**
  * An IOService implemented using Jena

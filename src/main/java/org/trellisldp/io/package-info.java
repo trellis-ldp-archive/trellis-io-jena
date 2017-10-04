@@ -14,7 +14,7 @@
 /**
  * Trellis resource input/output service (Jena)
  *
- * <p>This package implements the {@link org.trellisldp.spi.IOService}
+ * <p>This package implements the {@link org.trellisldp.api.IOService}
  * using a Jena backend.</p>
  *
  * @author acoburn

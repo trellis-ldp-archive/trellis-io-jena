@@ -32,7 +32,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Triple;
 
-import org.trellisldp.spi.NamespaceService;
+import org.trellisldp.api.NamespaceService;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.RDFS;
 import org.trellisldp.vocabulary.SKOS;
