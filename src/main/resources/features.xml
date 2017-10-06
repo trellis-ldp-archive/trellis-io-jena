@@ -14,7 +14,10 @@
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
-    <bundle dependency="true">mvn:com.github.spullara.mustache.java/compiler/${mustacheVersion}</bundle>
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.mustache-compiler/${mustacheVersion}</bundle>
+
+    <!-- transitively required by jena -->
+    <bundle dependency="true">wrap:mvn:com.google.errorprone/error_prone_annotations/2.1.1</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-io-jena/${project.version}</bundle>
   </feature>

@@ -35,7 +35,7 @@ ext {
     commonsRdfVersion = '0.3.0-incubating'
     slf4jVersion = '1.7.25'
     jenaVersion = '3.4.0'
-    mustacheVersion = '0.9.5'
+    mustacheVersion = '0.9.5_1'
 
     /* Testing */
     junitVersion = '4.12'
@@ -55,7 +55,7 @@ dependencies {
     api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
     api group: 'org.trellisldp', name: 'trellis-api', version: trellisApiVersion
 
-    implementation group: 'com.github.spullara.mustache.java', name: 'compiler', version: mustacheVersion
+    implementation group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.mustache-compiler', version: mustacheVersion
     implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
     implementation group: 'org.apache.jena', name: 'jena-osgi', version: jenaVersion
     implementation group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
