@@ -1,16 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <features xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" name="trellis-io-jena-${project.version}">
-
-  <repository>mvn:org.trellisldp/trellis-api/${trellisApiVersion}/xml/features</repository>
-  <repository>mvn:org.trellisldp/trellis-vocabulary/${trellisVocabularyVersion}/xml/features</repository>
-  <repository>mvn:org.apache.jena/jena-osgi-features/${jenaVersion}/xml/features</repository>
-
   <feature name="trellis-io-jena" version="${project.version}">
     <details>Installs the Jena-backed serialization service</details>
 
-    <feature>trellis-api</feature>
-    <feature>trellis-vocabulary</feature>
-    <feature>jena</feature>
+    <feature version="${trellisApiVersionRange}">trellis-api</feature>
+    <feature version="${trellisVocabularyVersionRange}">trellis-vocabulary</feature>
+    <feature version="${jenaVersionRange}">jena</feature>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
