@@ -34,14 +34,16 @@ import static org.apache.jena.vocabulary.DCTerms.subject;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.DCTypes.Text;
 import static org.apache.jena.vocabulary.RDF.Nodes.type;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -63,11 +65,11 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.RuntimeRepositoryException;
@@ -75,7 +77,7 @@ import org.trellisldp.api.RuntimeRepositoryException;
 /**
  * @author acoburn
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(JUnitPlatform.class)
 public class IOServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
@@ -90,8 +92,9 @@ public class IOServiceTest {
     @Mock
     private OutputStream mockOutputStream;
 
-    @Before
+    @BeforeEach
     public void setUp() {
+        initMocks(this);
         final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("dcterms", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
@@ -162,10 +165,10 @@ public class IOServiceTest {
         validateGraph(graph);
     }
 
-    @Test(expected = RuntimeRepositoryException.class)
+    @Test
     public void testMalformedInput() {
         final ByteArrayInputStream in = new ByteArrayInputStream("<> <ex:test> a Literal\" . ".getBytes(UTF_8));
-        service.read(in, null, TURTLE);
+        assertThrows(RuntimeRepositoryException.class, () -> service.read(in, null, TURTLE));
     }
 
     @Test
@@ -234,24 +237,24 @@ public class IOServiceTest {
         assertTrue(html.contains("<h1>A title</h1>"));
     }
 
-    @Test(expected = RuntimeRepositoryException.class)
+    @Test
     public void testUpdateError() {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size());
-        service.update(graph, "blah blah blah blah blah", null);
+        assertThrows(RuntimeRepositoryException.class, () -> service.update(graph, "blah blah blah blah blah", null));
     }
 
-    @Test(expected = RuntimeRepositoryException.class)
+    @Test
     public void testReadError() throws IOException {
         doThrow(new IOException()).when(mockInputStream).read(any(byte[].class), anyInt(), anyInt());
-        service.read(mockInputStream, "context", TURTLE);
+        assertThrows(RuntimeRepositoryException.class, () -> service.read(mockInputStream, "context", TURTLE));
     }
 
-    @Test(expected = RuntimeRepositoryException.class)
+    @Test
     public void testWriteError() throws IOException {
         doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
-        service.write(getTriples(), mockOutputStream, TURTLE);
+        assertThrows(RuntimeRepositoryException.class, () -> service.write(getTriples(), mockOutputStream, TURTLE));
     }
 
     @Test
