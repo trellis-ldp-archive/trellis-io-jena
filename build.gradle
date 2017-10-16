@@ -38,7 +38,7 @@ ext {
     mustacheVersion = '0.9.5_1'
 
     /* Testing */
-    junitVersion = '4.12'
+    junitVersion = '4.12.1'
     mockitoVersion = '2.11.0'
     logbackVersion = '1.2.3'
     jacocoVersion = "0.7.9"
@@ -65,7 +65,7 @@ dependencies {
     implementation group: 'org.trellisldp', name: 'trellis-vocabulary', version: trellisVocabularyVersion
 
     testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    testImplementation group: 'junit', name: 'junit', version: junitVersion
+    testImplementation group: 'org.junit.vintage', name: 'junit-vintage-engine', version: junitVersion
     testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
 
     buildToolsConfig 'org.trellisldp:trellis-build-tools:0.2.0'
