@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.riot.Lang.JSONLD;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
@@ -42,10 +42,10 @@ import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.atlas.AtlasException;
 import org.apache.jena.query.QueryParseException;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.update.UpdateException;
@@ -124,13 +124,14 @@ public class JenaIOService implements IOService {
                     stream.finish();
                 } else {
                     LOGGER.debug("Writing buffered RDF: {}", lang);
-                    final Model model = createDefaultModel();
-                    ofNullable(nsService).map(NamespaceService::getNamespaces).ifPresent(model::setNsPrefixes);
-                    triples.map(rdf::asJenaTriple).map(model::asStatement).forEach(model::add);
+                    final org.apache.jena.graph.Graph graph = createDefaultGraph();
+                    ofNullable(nsService).map(NamespaceService::getNamespaces)
+                        .ifPresent(graph.getPrefixMapping()::setNsPrefixes);
+                    triples.map(rdf::asJenaTriple).forEach(graph::add);
                     if (JSONLD.equals(lang)) {
-                        RDFDataMgr.write(output, model.getGraph(), getJsonLdProfile(profiles));
+                        RDFDataMgr.write(output, graph, getJsonLdProfile(profiles));
                     } else {
-                        RDFDataMgr.write(output, model.getGraph(), lang);
+                        RDFDataMgr.write(output, graph, lang);
                     }
                 }
             }
@@ -140,37 +141,40 @@ public class JenaIOService implements IOService {
     }
 
     @Override
-    public Stream<? extends Triple> read(final InputStream input, final String context, final RDFSyntax syntax) {
+    public Stream<? extends Triple> read(final InputStream input, final String base, final RDFSyntax syntax) {
         requireNonNull(input, "The input stream may not be null!");
         requireNonNull(syntax, "The syntax value may not be null!");
 
         try {
-            final Model model = createDefaultModel();
+            final org.apache.jena.graph.Graph graph = createDefaultGraph();
             final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
                     new RuntimeRepositoryException("Unsupported RDF Syntax: " + syntax.mediaType));
 
-            RDFDataMgr.read(model, input, context, lang);
-            ofNullable(nsService).map(NamespaceService::getNamespaces).map(Map::entrySet).ifPresent(ns -> {
-                final Set<String> namespaces = ns.stream().map(Map.Entry::getValue).collect(toSet());
-                model.getNsPrefixMap().forEach((prefix, namespace) -> {
+            RDFParser.source(input).lang(lang).base(base).parse(graph);
+
+            // Check the graph for any new namespace definitions
+            if (nonNull(nsService)) {
+                final Set<String> namespaces = nsService.getNamespaces().entrySet().stream().map(Map.Entry::getValue)
+                    .collect(toSet());
+                graph.getPrefixMapping().getNsPrefixMap().forEach((prefix, namespace) -> {
                     if (!namespaces.contains(namespace)) {
                         LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
-                        ofNullable(nsService).ifPresent(svc -> svc.setPrefix(prefix, namespace));
+                        nsService.setPrefix(prefix, namespace);
                     }
                 });
-            });
-            return rdf.asGraph(model).stream();
+            }
+            return rdf.asGraph(graph).stream();
         } catch (final RiotException | AtlasException ex) {
             throw new RuntimeRepositoryException(ex);
         }
     }
 
     @Override
-    public void update(final Graph graph, final String update, final String context) {
+    public void update(final Graph graph, final String update, final String base) {
         requireNonNull(graph, "The input graph may not be null");
         requireNonNull(update, "The update command may not be null");
         try {
-            execute(create(update, context), rdf.asJenaGraph(graph));
+            execute(create(update, base), rdf.asJenaGraph(graph));
         } catch (final UpdateException | QueryParseException ex) {
             throw new RuntimeRepositoryException(ex);
         }
