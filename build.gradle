@@ -34,7 +34,7 @@ ext {
     trellisVocabularyVersion = '0.1.0'
     commonsRdfVersion = '0.3.0-incubating'
     slf4jVersion = '1.7.25'
-    jenaVersion = '3.4.0'
+    jenaVersion = '3.5.0'
     mustacheVersion = '0.9.5_1'
 
     /* Testing */
