@@ -15,6 +15,7 @@ package org.trellisldp.io.impl;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Optional.of;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.jena.riot.RDFFormat.JSONLD_COMPACT_FLAT;
 import static org.apache.jena.riot.RDFFormat.JSONLD_EXPAND_FLAT;
 import static org.apache.jena.riot.RDFFormat.JSONLD_FLATTEN_FLAT;
@@ -24,8 +25,9 @@ import static org.trellisldp.vocabulary.JSONLD.expanded;
 import static org.trellisldp.vocabulary.JSONLD.expanded_flattened;
 import static org.trellisldp.vocabulary.JSONLD.flattened;
 
-import java.util.HashMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.jena.riot.RDFFormat;
@@ -36,18 +38,13 @@ import org.apache.jena.riot.RDFFormat;
  */
 public final class IOUtils {
 
-    private static final Map<IRI, RDFFormat> JSONLD_FORMATS;
-
-    static {
-        // TODO -- refactor this with JDK9
-        final Map<IRI, RDFFormat> data = new HashMap<>();
-        data.put(compacted, JSONLD_COMPACT_FLAT);
-        data.put(flattened, JSONLD_FLATTEN_FLAT);
-        data.put(expanded, JSONLD_EXPAND_FLAT);
-        data.put(compacted_flattened, JSONLD_FLATTEN_FLAT);
-        data.put(expanded_flattened, JSONLD_FLATTEN_FLAT);
-        JSONLD_FORMATS = unmodifiableMap(data);
-    }
+    private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
+                new SimpleEntry<>(compacted, JSONLD_COMPACT_FLAT),
+                new SimpleEntry<>(flattened, JSONLD_FLATTEN_FLAT),
+                new SimpleEntry<>(expanded, JSONLD_EXPAND_FLAT),
+                new SimpleEntry<>(compacted_flattened, JSONLD_FLATTEN_FLAT),
+                new SimpleEntry<>(expanded_flattened, JSONLD_FLATTEN_FLAT))
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     /**
      * This will combine multiple JSON-LD profiles into a single profile. For example,

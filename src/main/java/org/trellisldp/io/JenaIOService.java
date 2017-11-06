@@ -17,7 +17,9 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Stream.of;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.riot.Lang.JSONLD;
@@ -30,7 +32,7 @@ import static org.trellisldp.io.impl.IOUtils.getJsonLdProfile;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -67,15 +69,10 @@ public class JenaIOService implements IOService {
 
     private static final JenaRDF rdf = new JenaRDF();
 
-    private static final Map<String, String> defaultProperties;
-
-    static {
-        // TODO use JDK9 initializer
-        final Map<String, String> data = new HashMap<>();
-        data.put("icon", "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
-        data.put("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
-        defaultProperties = unmodifiableMap(data);
-    }
+    private static final Map<String, String> defaultProperties = unmodifiableMap(of(
+        new SimpleEntry<>("icon", "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png"),
+        new SimpleEntry<>("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css"))
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     private NamespaceService nsService;
     private HtmlSerializer htmlSerializer;
