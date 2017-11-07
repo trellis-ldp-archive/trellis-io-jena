@@ -83,7 +83,7 @@ import org.trellisldp.api.RuntimeRepositoryException;
 public class IOServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
-    private IOService service, service2;
+    private IOService service, service2, service3;
 
     @Mock
     private NamespaceService mockNamespaceService;
@@ -113,6 +113,8 @@ public class IOServiceTest {
         service2 = new JenaIOService(mockNamespaceService, properties, emptySet(),
                 singleton("http://www.w3.org/ns/"));
 
+        service3 = new JenaIOService(mockNamespaceService);
+
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
         when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/terms/"))).thenReturn(Optional.of("dc"));
         when(mockNamespaceService.getPrefix(eq("http://sws.geonames.org/4929022/"))).thenReturn(empty());
@@ -125,14 +127,14 @@ public class IOServiceTest {
     @Test
     public void testJsonLdDefaultSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getTriples(), out, JSONLD);
+        service3.write(getTriples(), out, JSONLD);
         final String output = out.toString("UTF-8");
         assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
         assertFalse(output.contains("\"@context\":"));
         assertFalse(output.contains("\"@graph\":"));
 
         final Graph graph = rdf.createGraph();
-        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        service3.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
         validateGraph(graph);
     }
 
@@ -247,7 +249,7 @@ public class IOServiceTest {
     @Test
     public void testNTriplesSerializer() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getTriples(), out, NTRIPLES);
+        service3.write(getTriples(), out, NTRIPLES);
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         final org.apache.jena.graph.Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.NTRIPLES);
