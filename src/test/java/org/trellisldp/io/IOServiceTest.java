@@ -14,6 +14,8 @@
 package org.trellisldp.io;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.stream.Stream.of;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
@@ -81,7 +83,7 @@ import org.trellisldp.api.RuntimeRepositoryException;
 public class IOServiceTest {
 
     private static final JenaRDF rdf = new JenaRDF();
-    private IOService service;
+    private IOService service, service2;
 
     @Mock
     private NamespaceService mockNamespaceService;
@@ -99,7 +101,18 @@ public class IOServiceTest {
         namespaces.put("dcterms", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
 
-        service = new JenaIOService(mockNamespaceService);
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("icon",
+                "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
+        properties.put("css",
+                "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+
+        service = new JenaIOService(mockNamespaceService, properties,
+                singleton("http://www.w3.org/ns/anno.jsonld"), emptySet());
+
+        service2 = new JenaIOService(mockNamespaceService, properties, emptySet(),
+                singleton("http://www.w3.org/ns/"));
+
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
         when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/terms/"))).thenReturn(Optional.of("dc"));
         when(mockNamespaceService.getPrefix(eq("http://sws.geonames.org/4929022/"))).thenReturn(empty());
@@ -134,6 +147,66 @@ public class IOServiceTest {
 
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        validateGraph(graph);
+    }
+
+    @Test
+    public void testJsonLdCustomSerializer() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"dcterms:title\":\"A title\""));
+        assertTrue(output.contains("\"type\":\"Text\""));
+        assertTrue(output.contains("\"@context\":"));
+        assertTrue(output.contains("\"@context\":\"http://www.w3.org/ns/anno.jsonld\""));
+        assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        validateGraph(graph);
+    }
+
+    @Test
+    public void testJsonLdCustomSerializer2() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service2.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"dcterms:title\":\"A title\""));
+        assertTrue(output.contains("\"type\":\"Text\""));
+        assertTrue(output.contains("\"@context\":"));
+        assertTrue(output.contains("\"@context\":\"http://www.w3.org/ns/anno.jsonld\""));
+        assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service2.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        validateGraph(graph);
+    }
+
+    @Test
+    public void testJsonLdCustomUnrecognizedSerializer() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.example.org/context.jsonld"));
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
+        assertFalse(output.contains("\"@context\":"));
+        assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        validateGraph(graph);
+    }
+
+    @Test
+    public void testJsonLdCustomUnrecognizedSerializer2() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service2.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.example.org/context.jsonld"));
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
+        assertFalse(output.contains("\"@context\":"));
+        assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service2.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
         validateGraph(graph);
     }
 

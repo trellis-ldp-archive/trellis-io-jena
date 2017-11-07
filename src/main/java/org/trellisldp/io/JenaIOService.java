@@ -13,7 +13,10 @@
  */
 package org.trellisldp.io;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
@@ -23,33 +26,46 @@ import static java.util.stream.Stream.of;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA_HTML;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.riot.Lang.JSONLD;
+import static org.apache.jena.riot.RDFFormat.JSONLD_COMPACT_FLAT;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.apache.jena.update.UpdateAction.execute;
 import static org.apache.jena.update.UpdateFactory.create;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.io.impl.IOUtils.getJsonLdProfile;
+import static org.trellisldp.vocabulary.JSONLD.URI;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.atlas.AtlasException;
+import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.query.QueryParseException;
+import org.apache.jena.riot.JsonLDWriteContext;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.WriterDatasetRIOT;
+import org.apache.jena.riot.system.PrefixMap;
+import org.apache.jena.riot.system.RiotLib;
 import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.web.HttpOp;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
 import org.slf4j.Logger;
 
@@ -74,8 +90,12 @@ public class JenaIOService implements IOService {
         new SimpleEntry<>("css", "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css"))
             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
-    private NamespaceService nsService;
-    private HtmlSerializer htmlSerializer;
+    private final Set<String> whitelist;
+    private final Set<String> whitelistDomains;
+    private final Map<String, String> contextCache;
+
+    private final NamespaceService nsService;
+    private final HtmlSerializer htmlSerializer;
 
     /**
      * Create a serialization service
@@ -91,9 +111,24 @@ public class JenaIOService implements IOService {
      * @param properties additional properties for the HTML view
      */
     public JenaIOService(final NamespaceService namespaceService, final Map<String, String> properties) {
+        this(namespaceService, properties, emptySet(), emptySet());
+    }
+
+    /**
+     * Create a serialization service
+     * @param namespaceService the namespace service
+     * @param properties additional properties for the HTML view
+     * @param whitelist a whitelist of JSON-LD profiles
+     * @param whitelistDomains a whitelist of domains for use with JSON-LD profiles
+     */
+    public JenaIOService(final NamespaceService namespaceService, final Map<String, String> properties,
+            final Set<String> whitelist, final Set<String> whitelistDomains) {
         this.nsService = namespaceService;
         this.htmlSerializer = new HtmlSerializer(namespaceService,
                 properties.getOrDefault("template", "org/trellisldp/io/resource.mustache"), properties);
+        this.whitelist = unmodifiableSet(whitelist);
+        this.whitelistDomains = unmodifiableSet(whitelistDomains);
+        this.contextCache = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -126,7 +161,7 @@ public class JenaIOService implements IOService {
                         .ifPresent(graph.getPrefixMapping()::setNsPrefixes);
                     triples.map(rdf::asJenaTriple).forEach(graph::add);
                     if (JSONLD.equals(lang)) {
-                        RDFDataMgr.write(output, graph, getJsonLdProfile(profiles));
+                        writeJsonLd(output, DatasetGraphFactory.create(graph), profiles);
                     } else {
                         RDFDataMgr.write(output, graph, lang);
                     }
@@ -135,6 +170,45 @@ public class JenaIOService implements IOService {
         } catch (final AtlasException ex) {
             throw new RuntimeRepositoryException(ex);
         }
+    }
+
+    private void writeJsonLd(final OutputStream output, final DatasetGraph graph, final IRI... profiles) {
+        final String profile = getCustomJsonLdProfile(profiles);
+        final RDFFormat format = nonNull(profile) ? JSONLD_COMPACT_FLAT : getJsonLdProfile(profiles);
+        final WriterDatasetRIOT writer = RDFDataMgr.createDatasetWriter(format);
+        final PrefixMap pm = RiotLib.prefixMap(graph);
+        final String base = null;
+        final JsonLDWriteContext ctx = new JsonLDWriteContext();
+        if (nonNull(profile)) {
+            LOGGER.debug("Setting JSON-LD context with profile: {}", profile);
+            ctx.setJsonLDContext(contextCache.computeIfAbsent(profile, p -> {
+                try (final TypedInputStream res = HttpOp.execHttpGet(profile)) {
+                    return IOUtils.toString(res.getInputStream(), UTF_8);
+                } catch (final IOException ex) {
+                    LOGGER.error("Error fetching profile {}: {}", p, ex);
+                }
+                return null;
+            }));
+            ctx.setJsonLDContextSubstitution("\"" + profile + "\"");
+        }
+        writer.write(output, graph, pm, base, ctx);
+    }
+
+    private String getCustomJsonLdProfile(final IRI... profiles) {
+        for (final IRI p : profiles) {
+            final String profile = p.getIRIString();
+            if (!profile.startsWith(URI)) {
+                if (whitelist.contains(profile)) {
+                    return profile;
+                }
+                for (final String domain : whitelistDomains) {
+                    if (profile.startsWith(domain)) {
+                        return profile;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override
