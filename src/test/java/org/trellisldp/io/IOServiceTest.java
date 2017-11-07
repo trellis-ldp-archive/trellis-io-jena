@@ -108,7 +108,7 @@ public class IOServiceTest {
                 "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
 
         service = new JenaIOService(mockNamespaceService, properties,
-                singleton("http://www.w3.org/ns/anno.jsonld"), emptySet());
+                singleton("http://www.w3.org/ns/anno.jsonld"), singleton("http://www.trellisldp.org/ns/"));
 
         service2 = new JenaIOService(mockNamespaceService, properties, emptySet(),
                 singleton("http://www.w3.org/ns/"));
@@ -209,6 +209,20 @@ public class IOServiceTest {
 
         final Graph graph = rdf.createGraph();
         service2.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        validateGraph(graph);
+    }
+
+    @Test
+    public void testJsonLdCustomUnrecognizedSerializer3() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.trellisldp.org/ns/nonexistent.jsonld"));
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"title\":\"A title\""));
+        assertTrue(output.contains("\"@context\":"));
+        assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
         validateGraph(graph);
     }
 

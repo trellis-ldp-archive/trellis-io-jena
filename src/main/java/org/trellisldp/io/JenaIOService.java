@@ -51,6 +51,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.atlas.AtlasException;
+import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.query.QueryParseException;
 import org.apache.jena.riot.JsonLDWriteContext;
@@ -181,15 +182,18 @@ public class JenaIOService implements IOService {
         final JsonLDWriteContext ctx = new JsonLDWriteContext();
         if (nonNull(profile)) {
             LOGGER.debug("Setting JSON-LD context with profile: {}", profile);
-            ctx.setJsonLDContext(contextCache.computeIfAbsent(profile, p -> {
+            final String c = contextCache.computeIfAbsent(profile, p -> {
                 try (final TypedInputStream res = HttpOp.execHttpGet(profile)) {
                     return IOUtils.toString(res.getInputStream(), UTF_8);
-                } catch (final IOException ex) {
-                    LOGGER.error("Error fetching profile {}: {}", p, ex);
+                } catch (final IOException | HttpException ex) {
+                    LOGGER.error("Error fetching profile {}: {}", p, ex.getMessage());
                 }
                 return null;
-            }));
-            ctx.setJsonLDContextSubstitution("\"" + profile + "\"");
+            });
+            if (nonNull(c)) {
+                ctx.setJsonLDContext(c);
+                ctx.setJsonLDContextSubstitution("\"" + profile + "\"");
+            }
         }
         writer.write(output, graph, pm, base, ctx);
     }
