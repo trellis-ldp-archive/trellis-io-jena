@@ -357,7 +357,6 @@ public class IOServiceTest {
         properties.put("css",
                 "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
         properties.put("template", getClass().getResource("/resource-test.mustache").toURI().getPath());
-        System.out.println(properties);
 
         final IOService service4 = new JenaIOService(mockNamespaceService, properties);
 
