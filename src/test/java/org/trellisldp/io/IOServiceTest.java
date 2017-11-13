@@ -13,6 +13,7 @@
  */
 package org.trellisldp.io;
 
+import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -46,6 +47,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+
+import com.google.common.cache.Cache;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -101,6 +104,8 @@ public class IOServiceTest {
         namespaces.put("dcterms", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
 
+        final Cache<String, String> cache = newBuilder().build();
+
         final Map<String, String> properties = new HashMap<>();
         properties.put("icon",
                 "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
@@ -108,10 +113,10 @@ public class IOServiceTest {
                 "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
 
         service = new JenaIOService(mockNamespaceService, properties,
-                singleton("http://www.w3.org/ns/anno.jsonld"), singleton("http://www.trellisldp.org/ns/"));
+                singleton("http://www.w3.org/ns/anno.jsonld"), singleton("http://www.trellisldp.org/ns/"), cache);
 
         service2 = new JenaIOService(mockNamespaceService, properties, emptySet(),
-                singleton("http://www.w3.org/ns/"));
+                singleton("http://www.w3.org/ns/"), cache);
 
         service3 = new JenaIOService(mockNamespaceService);
 
@@ -195,6 +200,28 @@ public class IOServiceTest {
 
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
+        validateGraph(graph);
+    }
+
+    @Test
+    public void testJsonLdNullCache() throws UnsupportedEncodingException {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("icon",
+                "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
+        properties.put("css",
+                "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final IOService myservice = new JenaIOService(null, properties, emptySet(),
+                singleton("http://www.w3.org/ns/"), null);
+        myservice.write(getTriples(), out, JSONLD, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
+        final String output = out.toString("UTF-8");
+        assertTrue(output.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"));
+        assertFalse(output.contains("\"@context\":"));
+        assertFalse(output.contains("\"@graph\":"));
+
+        final Graph graph = rdf.createGraph();
+        myservice.read(new ByteArrayInputStream(output.getBytes(UTF_8)), null, JSONLD).forEach(graph::add);
         validateGraph(graph);
     }
 

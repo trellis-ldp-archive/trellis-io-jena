@@ -36,6 +36,7 @@ ext {
     slf4jVersion = '1.7.25'
     jenaVersion = '3.5.0'
     mustacheVersion = '0.9.5_1'
+    guavaVersion = '23.0'
 
     /* Testing */
     junitVersion = '5.0.1'
@@ -59,6 +60,7 @@ configurations {
 dependencies {
     api group: 'org.apache.commons', name: 'commons-rdf-api', version: commonsRdfVersion
     api group: 'org.trellisldp', name: 'trellis-api', version: trellisApiVersion
+    api group: 'com.google.guava', name: 'guava', version: guavaVersion
 
     implementation group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.mustache-compiler', version: mustacheVersion
     implementation group: 'org.apache.commons', name: 'commons-rdf-jena', version: commonsRdfVersion
