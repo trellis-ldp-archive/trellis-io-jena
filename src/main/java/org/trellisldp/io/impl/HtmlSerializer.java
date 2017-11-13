@@ -20,9 +20,12 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.Map;
@@ -52,8 +55,20 @@ public class HtmlSerializer {
     public HtmlSerializer(final NamespaceService namespaceService, final String template,
             final Map<String, String> properties) {
         this.namespaceService = namespaceService;
-        this.template = mf.compile(template);
+        final File tpl = new File(template);
+        if (tpl.exists()) {
+            this.template = mf.compile(template);
+        } else {
+            this.template = mf.compile(getReader(template), template);
+        }
         this.properties = properties;
+    }
+
+    private Reader getReader(final String template) {
+        if (template.startsWith("/")) {
+            return new InputStreamReader(getClass().getResourceAsStream(template), UTF_8);
+        }
+        return new InputStreamReader(getClass().getResourceAsStream("/" + template), UTF_8);
     }
 
     /**

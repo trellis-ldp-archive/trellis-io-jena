@@ -327,6 +327,53 @@ public class IOServiceTest {
     }
 
     @Test
+    public void testHtmlSerializer3() {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("icon",
+                "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
+        properties.put("css",
+                "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+        properties.put("template", "/resource-test.mustache");
+
+        final IOService service4 = new JenaIOService(mockNamespaceService, properties);
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getComplexTriples(), out, RDFA_HTML, rdf.createIRI("http://example.org/"));
+        final String html = new String(out.toByteArray(), UTF_8);
+        assertTrue(html.contains("<title>A title</title>"));
+        assertTrue(html.contains("_:B"));
+        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
+        assertTrue(html.contains("<h1>A title</h1>"));
+    }
+
+    @Test
+    public void testHtmlSerializer4() throws Exception {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("icon",
+                "//s3.amazonaws.com/www.trellisldp.org/assets/img/trellis.png");
+        properties.put("css",
+                "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
+        properties.put("template", getClass().getResource("/resource-test.mustache").toURI().getPath());
+        System.out.println(properties);
+
+        final IOService service4 = new JenaIOService(mockNamespaceService, properties);
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getComplexTriples(), out, RDFA_HTML, rdf.createIRI("http://example.org/"));
+        final String html = new String(out.toByteArray(), UTF_8);
+        assertTrue(html.contains("<title>A title</title>"));
+        assertTrue(html.contains("_:B"));
+        assertTrue(html.contains("<a href=\"http://sws.geonames.org/4929022/\">http://sws.geonames.org/4929022/</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/title\">dc:title</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/terms/spatial\">dc:spatial</a>"));
+        assertTrue(html.contains("<a href=\"http://purl.org/dc/dcmitype/Text\">dcmitype:Text</a>"));
+        assertTrue(html.contains("<h1>A title</h1>"));
+    }
+
+    @Test
     public void testUpdateError() {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
