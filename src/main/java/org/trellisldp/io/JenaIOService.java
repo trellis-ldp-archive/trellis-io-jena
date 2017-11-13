@@ -160,7 +160,7 @@ public class JenaIOService implements IOService {
                     final org.apache.jena.graph.Graph graph = createDefaultGraph();
                     ofNullable(nsService).map(NamespaceService::getNamespaces)
                         .ifPresent(graph.getPrefixMapping()::setNsPrefixes);
-                    triples.map(rdf::asJenaTriple).forEach(graph::add);
+                    triples.map(rdf::asJenaTriple).forEachOrdered(graph::add);
                     if (JSONLD.equals(lang)) {
                         writeJsonLd(output, DatasetGraphFactory.create(graph), profiles);
                     } else {
