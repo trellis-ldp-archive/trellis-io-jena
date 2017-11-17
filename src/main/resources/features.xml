@@ -10,7 +10,6 @@
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.mustache-compiler/${mustacheVersion}</bundle>
-    <bundle dependency="true">mvn:com.google.guava/guava/${guavaVersion}</bundle>
 
     <!-- transitively required by jena -->
     <bundle dependency="true">wrap:mvn:com.google.errorprone/error_prone_annotations/2.1.1</bundle>
