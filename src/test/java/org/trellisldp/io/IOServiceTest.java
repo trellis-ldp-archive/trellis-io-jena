@@ -13,7 +13,6 @@
  */
 package org.trellisldp.io;
 
-import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -43,12 +42,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-
-import com.google.common.cache.Cache;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -59,6 +57,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Graph;
@@ -75,8 +74,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RuntimeRepositoryException;
 
 /**
@@ -97,14 +97,16 @@ public class IOServiceTest {
     @Mock
     private OutputStream mockOutputStream;
 
+    @Mock
+    private CacheService<String, String> mockCache;
+
     @BeforeEach
+    @SuppressWarnings("unchecked")
     public void setUp() {
         initMocks(this);
         final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("dcterms", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
-
-        final Cache<String, String> cache = newBuilder().build();
 
         final Map<String, String> properties = new HashMap<>();
         properties.put("icon",
@@ -113,10 +115,10 @@ public class IOServiceTest {
                 "//s3.amazonaws.com/www.trellisldp.org/assets/css/trellis.css");
 
         service = new JenaIOService(mockNamespaceService, properties,
-                singleton("http://www.w3.org/ns/anno.jsonld"), singleton("http://www.trellisldp.org/ns/"), cache);
+                singleton("http://www.w3.org/ns/anno.jsonld"), singleton("http://www.trellisldp.org/ns/"), mockCache);
 
         service2 = new JenaIOService(mockNamespaceService, properties, emptySet(),
-                singleton("http://www.w3.org/ns/"), cache);
+                singleton("http://www.w3.org/ns/"), mockCache);
 
         service3 = new JenaIOService(mockNamespaceService);
 
@@ -127,6 +129,11 @@ public class IOServiceTest {
             .thenReturn(Optional.of("rdf"));
         when(mockNamespaceService.getPrefix(eq("http://purl.org/dc/dcmitype/")))
             .thenReturn(Optional.of("dcmitype"));
+        when(mockCache.get(anyString(), any(Function.class))).thenAnswer(inv -> {
+            final String key = (String) inv.getArgument(0);
+            final Function mapper = (Function<String, String>) inv.getArgument(1);
+            return mapper.apply(key);
+        });
     }
 
     @Test

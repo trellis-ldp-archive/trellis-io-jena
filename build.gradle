@@ -30,7 +30,7 @@ ext {
     license = 'Apache 2'
 
     /* Dependencies */
-    trellisApiVersion = '0.3.0'
+    trellisApiVersion = '0.4.0-SNAPSHOT'
     trellisVocabularyVersion = '0.1.0'
     commonsRdfVersion = '0.3.0-incubating'
     slf4jVersion = '1.7.25'
@@ -81,6 +81,10 @@ repositories {
     jcenter()
     mavenCentral()
     mavenLocal()
+    // TODO remove this when appropriate
+	maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
 }
 
 jacocoTestReport {

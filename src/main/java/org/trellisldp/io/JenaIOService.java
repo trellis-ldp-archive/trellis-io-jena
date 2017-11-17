@@ -35,15 +35,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.io.impl.IOUtils.getJsonLdProfile;
 import static org.trellisldp.vocabulary.JSONLD.URI;
 
-import com.google.common.cache.Cache;
-import com.google.common.util.concurrent.UncheckedExecutionException;
-
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
@@ -53,6 +50,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.atlas.AtlasException;
+import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.query.QueryParseException;
 import org.apache.jena.riot.JsonLDWriteContext;
@@ -71,6 +69,7 @@ import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
 import org.slf4j.Logger;
 
+import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RuntimeRepositoryException;
@@ -94,7 +93,7 @@ public class JenaIOService implements IOService {
 
     private final Set<String> whitelist;
     private final Set<String> whitelistDomains;
-    private final Cache<String, String> cache;
+    private final CacheService<String, String> cache;
 
     private final NamespaceService nsService;
     private final HtmlSerializer htmlSerializer;
@@ -122,10 +121,10 @@ public class JenaIOService implements IOService {
      * @param properties additional properties for the HTML view
      * @param whitelist a whitelist of JSON-LD profiles
      * @param whitelistDomains a whitelist of domains for use with JSON-LD profiles
-     * @param cache a guava cache for custom JSON-LD profile resolution
+     * @param cache a cache for custom JSON-LD profile resolution
      */
     public JenaIOService(final NamespaceService namespaceService, final Map<String, String> properties,
-            final Set<String> whitelist, final Set<String> whitelistDomains, final Cache<String, String> cache) {
+            final Set<String> whitelist, final Set<String> whitelistDomains, final CacheService<String, String> cache) {
         this.nsService = namespaceService;
         this.htmlSerializer = new HtmlSerializer(namespaceService,
                 properties.getOrDefault("template", "org/trellisldp/io/resource.mustache"), properties);
@@ -184,16 +183,17 @@ public class JenaIOService implements IOService {
         final JsonLDWriteContext ctx = new JsonLDWriteContext();
         if (nonNull(profile) && nonNull(cache)) {
             LOGGER.debug("Setting JSON-LD context with profile: {}", profile);
-            try {
-                final String c = cache.get(profile, () -> {
-                    try (final TypedInputStream res = HttpOp.execHttpGet(profile)) {
-                        return IOUtils.toString(res.getInputStream(), UTF_8);
-                    }
-                });
+            final String c = cache.get(profile, p -> {
+                try (final TypedInputStream res = HttpOp.execHttpGet(profile)) {
+                    return IOUtils.toString(res.getInputStream(), UTF_8);
+                } catch (final IOException | HttpException ex) {
+                    LOGGER.warn("Error fetching profile {}: {}", p, ex.getMessage());
+                    return null;
+                }
+            });
+            if (nonNull(c)) {
                 ctx.setJsonLDContext(c);
                 ctx.setJsonLDContextSubstitution("\"" + profile + "\"");
-            } catch (final ExecutionException | UncheckedExecutionException ex) {
-                LOGGER.warn("Error fetching profile {}: {}", profile, ex.getMessage());
             }
         }
         writer.write(output, graph, pm, base, ctx);
