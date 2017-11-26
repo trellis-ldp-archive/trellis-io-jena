@@ -154,7 +154,7 @@ public class JenaIOService implements IOService {
                     final StreamRDF stream = getWriterStream(output, format);
                     stream.start();
                     ofNullable(nsService).ifPresent(svc -> svc.getNamespaces().forEach(stream::prefix));
-                    triples.map(rdf::asJenaTriple).forEach(stream::triple);
+                    triples.map(rdf::asJenaTriple).forEachOrdered(stream::triple);
                     stream.finish();
                 } else {
                     LOGGER.debug("Writing buffered RDF: {}", lang);
