@@ -47,7 +47,7 @@ ext {
 
     /* OSGi */
     trellisApiVersionRange = '[0.3,1)'
-    trellisVocabularyVersionRange = '[0.1,)'
+    trellisVocabularyVersionRange = '[0.1,1)'
     jenaVersionRange = '[3.4,4)'
     projectOsgiVersion = project.version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
 }
