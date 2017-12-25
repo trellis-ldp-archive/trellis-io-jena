@@ -1,10 +1,6 @@
 # trellis-io-jena
 
-[![Build Status](https://travis-ci.org/trellis-ldp/trellis-io-jena.png?branch=master)](https://travis-ci.org/trellis-ldp/trellis-io-jena)
-[![Build status](https://ci.appveyor.com/api/projects/status/awgd162sglw3oe7y?svg=true)](https://ci.appveyor.com/project/acoburn/trellis-io-jena)
-[![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis-io-jena/badge.svg?branch=master)](https://coveralls.io/github/trellis-ldp/trellis-io-jena?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-io-jena/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.trellisldp/trellis-io-jena/)
-[![Code Climate](https://codeclimate.com/github/trellis-ldp/trellis-io-jena/badges/gpa.svg)](https://codeclimate.com/github/trellis-ldp/trellis-io-jena)
+**Note**: this project has been merged into the core [Trellis repository](https://github.com/trellis-ldp/trellis).
 
 A Jena-backed serialization service for resources in a trellis repository.
 
